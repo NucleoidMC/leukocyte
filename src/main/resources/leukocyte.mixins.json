@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "xyz.nucleoid.leukocyte.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "AreaHelperMixin",
+    "CraftingResultInventoryMixin",
+    "HungerManagerMixin",
+    "PlayerEntityMixin",
+    "ServerPlayerEntityMixin",
+    "ServerPlayerInteractionManagerMixin",
+    "TntBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

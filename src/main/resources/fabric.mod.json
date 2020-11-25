@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "leukocyte",
+  "version": "${version}",
+  "name": "Leukocyte",
+  "description": "World protection",
+  "authors": ["Nucleoid Contributors"],
+  "license": "LGPLv3",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["xyz.nucleoid.leukocyte.Leukocyte"]
+  },
+  "mixins": ["leukocyte.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.9.1",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  }
+}
