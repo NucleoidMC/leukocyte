@@ -7,6 +7,8 @@ import xyz.nucleoid.leukocyte.rule.ProtectionRuleMap;
 import xyz.nucleoid.leukocyte.scope.ProtectionScope;
 
 // TODO: support specific exclusions of a list of players by API?
+// TODO: keyed regions isn't useful for the purpose of minigames
+// TODO: compose a region out of multiple shapes?
 public final class ProtectionRegion implements Comparable<ProtectionRegion> {
     public static final Codec<ProtectionRegion> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(

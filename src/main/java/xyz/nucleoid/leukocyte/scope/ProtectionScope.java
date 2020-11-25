@@ -34,6 +34,10 @@ public interface ProtectionScope {
         return new BoxScope(dimension, min, max);
     }
 
+    static ProtectionScope union(ProtectionScope... scopes) {
+        return new UnionScope(scopes);
+    }
+
     boolean contains(RegistryKey<World> dimension);
 
     boolean contains(RegistryKey<World> dimension, BlockPos pos);
@@ -41,4 +45,8 @@ public interface ProtectionScope {
     Codec<? extends ProtectionScope> getCodec();
 
     MutableText display();
+
+    default ProtectionScope union(ProtectionScope other) {
+        return union(this, other);
+    }
 }

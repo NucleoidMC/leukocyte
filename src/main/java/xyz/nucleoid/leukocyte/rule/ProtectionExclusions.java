@@ -19,21 +19,29 @@ public final class ProtectionExclusions {
     public static final Codec<ProtectionExclusions> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Codec.STRING.listOf().fieldOf("roles").forGetter(exclusions -> new ArrayList<>(exclusions.roles)),
-                UUID_CODEC.listOf().fieldOf("players").forGetter(exclusions -> new ArrayList<>(exclusions.players))
+                UUID_CODEC.listOf().fieldOf("players").forGetter(exclusions -> new ArrayList<>(exclusions.players)),
+                Codec.BOOL.fieldOf("include_operators").forGetter(exclusions -> exclusions.includeOperators)
         ).apply(instance, ProtectionExclusions::new);
     });
 
     private final Set<String> roles;
     private final Set<UUID> players;
 
+    private boolean includeOperators;
+
     public ProtectionExclusions() {
         this.roles = new ObjectOpenHashSet<>();
         this.players = new ObjectOpenHashSet<>();
     }
 
-    private ProtectionExclusions(Collection<String> roles, Collection<UUID> players) {
+    private ProtectionExclusions(Collection<String> roles, Collection<UUID> players, boolean includeOperators) {
         this.roles = new ObjectOpenHashSet<>(roles);
         this.players = new ObjectOpenHashSet<>(players);
+        this.includeOperators = includeOperators;
+    }
+
+    public void includeOperators() {
+        this.includeOperators = true;
     }
 
     public boolean addRole(String role) {
@@ -53,7 +61,7 @@ public final class ProtectionExclusions {
     }
 
     public boolean isExcluded(PlayerEntity player) {
-        if (player.hasPermissionLevel(4)) {
+        if (!this.includeOperators && player.hasPermissionLevel(4)) {
             return true;
         }
 
@@ -73,6 +81,6 @@ public final class ProtectionExclusions {
     }
 
     public ProtectionExclusions copy() {
-        return new ProtectionExclusions(this.roles, this.players);
+        return new ProtectionExclusions(this.roles, this.players, this.includeOperators);
     }
 }

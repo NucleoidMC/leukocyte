@@ -10,6 +10,7 @@ public final class ProtectionScopeRegistry {
         register("global", GlobalScope.CODEC);
         register("dimension", DimensionScope.CODEC);
         register("box", BoxScope.CODEC);
+        register("union", UnionScope.CODEC);
     }
 
     public static <T extends ProtectionScope> void register(String identifier, Codec<T> codec) {
