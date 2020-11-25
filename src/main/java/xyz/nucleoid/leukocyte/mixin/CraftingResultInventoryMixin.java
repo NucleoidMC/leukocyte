@@ -7,7 +7,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
-import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 
@@ -15,10 +15,10 @@ import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 public abstract class CraftingResultInventoryMixin implements RecipeUnlocker {
     @Override
     public boolean shouldCraftRecipe(World world, ServerPlayerEntity player, Recipe<?> recipe) {
-        ProtectionManager protection = ProtectionManager.get(player.server);
+        Leukocyte leukocyte = Leukocyte.get(player.server);
 
         RuleQuery query = RuleQuery.forPlayer(player);
-        if (protection.denies(query, ProtectionRule.CRAFTING)) {
+        if (leukocyte.denies(query, ProtectionRule.CRAFTING)) {
             return false;
         }
 

@@ -9,7 +9,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
-import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.region.ProtectionRegion;
 
 public final class ProtectionRegionArgument {
@@ -21,10 +21,10 @@ public final class ProtectionRegionArgument {
         return CommandManager.argument(name, StringArgumentType.string())
                 .suggests((context, builder) -> {
                     ServerCommandSource source = context.getSource();
-                    ProtectionManager protection = ProtectionManager.get(source.getMinecraftServer());
+                    Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
 
                     return CommandSource.suggestMatching(
-                            protection.getRegionKeys().stream(),
+                            leukocyte.getRegionKeys().stream(),
                             builder
                     );
                 });
@@ -34,9 +34,9 @@ public final class ProtectionRegionArgument {
         String key = StringArgumentType.getString(context, name);
 
         ServerCommandSource source = context.getSource();
-        ProtectionManager protection = ProtectionManager.get(source.getMinecraftServer());
+        Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
 
-        ProtectionRegion region = protection.byKey(key);
+        ProtectionRegion region = leukocyte.getRegionByKey(key);
         if (region == null) {
             throw REGION_NOT_FOUND.create(key);
         }

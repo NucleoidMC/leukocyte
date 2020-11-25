@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
@@ -16,10 +16,10 @@ public abstract class ServerPlayerEntityMixin {
     private void testPvpEnabled(CallbackInfoReturnable<Boolean> ci) {
         ServerPlayerEntity self = (ServerPlayerEntity) (Object) this;
 
-        ProtectionManager protection = ProtectionManager.get(self.server);
+        Leukocyte leukocyte = Leukocyte.get(self.server);
 
         RuleQuery query = RuleQuery.forPlayer(self);
-        RuleResult result = protection.test(query, ProtectionRule.PVP);
+        RuleResult result = leukocyte.test(query, ProtectionRule.PVP);
         if (result == RuleResult.ALLOW) {
             ci.setReturnValue(true);
         } else if (result == RuleResult.DENY) {

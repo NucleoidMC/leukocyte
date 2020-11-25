@@ -1,6 +1,6 @@
 package xyz.nucleoid.leukocyte;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import xyz.nucleoid.leukocyte.region.ProtectionRegion;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
@@ -8,10 +8,10 @@ import xyz.nucleoid.leukocyte.rule.RuleResult;
 import java.util.Iterator;
 
 public final class RuleSample implements Iterable<ProtectionRegion> {
-    private final ServerPlayerEntity source;
+    private final PlayerEntity source;
     private final Iterable<ProtectionRegion> regions;
 
-    RuleSample(ServerPlayerEntity source, Iterable<ProtectionRegion> regions) {
+    RuleSample(PlayerEntity source, Iterable<ProtectionRegion> regions) {
         this.source = source;
         this.regions = regions;
     }
@@ -22,7 +22,7 @@ public final class RuleSample implements Iterable<ProtectionRegion> {
     }
 
     public RuleResult test(ProtectionRule rule) {
-        ServerPlayerEntity source = this.source;
+        PlayerEntity source = this.source;
         if (source != null && source.hasPermissionLevel(4)) {
             return RuleResult.PASS;
         }

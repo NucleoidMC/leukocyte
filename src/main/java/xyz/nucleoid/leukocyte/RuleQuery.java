@@ -1,6 +1,6 @@
 package xyz.nucleoid.leukocyte;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -10,9 +10,9 @@ import xyz.nucleoid.leukocyte.region.ProtectionRegion;
 public final class RuleQuery {
     private final RegistryKey<World> dimension;
     private final BlockPos pos;
-    private final ServerPlayerEntity source;
+    private final PlayerEntity source;
 
-    RuleQuery(RegistryKey<World> dimension, BlockPos pos, ServerPlayerEntity source) {
+    RuleQuery(RegistryKey<World> dimension, BlockPos pos, PlayerEntity source) {
         this.dimension = dimension;
         this.pos = pos;
         this.source = source;
@@ -34,11 +34,11 @@ public final class RuleQuery {
         return new RuleQuery(dimension, null, null);
     }
 
-    public static RuleQuery forPlayer(ServerPlayerEntity player) {
+    public static RuleQuery forPlayer(PlayerEntity player) {
         return new RuleQuery(player.world.getRegistryKey(), player.getBlockPos(), player);
     }
 
-    public static RuleQuery forPlayerAt(ServerPlayerEntity player, BlockPos pos) {
+    public static RuleQuery forPlayerAt(PlayerEntity player, BlockPos pos) {
         return new RuleQuery(player.world.getRegistryKey(), pos, player);
     }
 

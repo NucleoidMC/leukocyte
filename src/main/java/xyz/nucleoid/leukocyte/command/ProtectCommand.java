@@ -19,7 +19,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.RuleSample;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRegionArgument;
@@ -90,8 +90,8 @@ public final class ProtectCommand {
         BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
         BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
 
-        ProtectionManager protection = ProtectionManager.get(context.getSource().getMinecraftServer());
-        if (protection.add(new ProtectionRegion(key, ProtectionScope.box(dimension, min, max), 0))) {
+        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
+        if (leukocyte.addRegion(new ProtectionRegion(key, ProtectionScope.box(dimension, min, max), 0))) {
             context.getSource().sendFeedback(new LiteralText("Added region in " + dimension.getValue() + " " + key), true);
         } else {
             throw REGION_ALREADY_EXISTS.create(key);
@@ -104,8 +104,8 @@ public final class ProtectCommand {
         String key = StringArgumentType.getString(context, "region");
         RegistryKey<World> dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
 
-        ProtectionManager protection = ProtectionManager.get(context.getSource().getMinecraftServer());
-        if (protection.add(new ProtectionRegion(key, ProtectionScope.dimension(dimension), 0))) {
+        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
+        if (leukocyte.addRegion(new ProtectionRegion(key, ProtectionScope.dimension(dimension), 0))) {
             context.getSource().sendFeedback(new LiteralText("Added region in " + dimension.getValue() + " " + key), true);
         } else {
             throw REGION_ALREADY_EXISTS.create(key);
@@ -117,8 +117,8 @@ public final class ProtectCommand {
     private static int addGlobal(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         String key = StringArgumentType.getString(context, "region");
 
-        ProtectionManager protection = ProtectionManager.get(context.getSource().getMinecraftServer());
-        if (protection.add(new ProtectionRegion(key, ProtectionScope.global(), 0))) {
+        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
+        if (leukocyte.addRegion(new ProtectionRegion(key, ProtectionScope.global(), 0))) {
             context.getSource().sendFeedback(new LiteralText("Added global region " + key + "@"), true);
         } else {
             throw REGION_ALREADY_EXISTS.create(key);
@@ -130,8 +130,8 @@ public final class ProtectCommand {
     private static int remove(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
 
-        ProtectionManager protection = ProtectionManager.get(context.getSource().getMinecraftServer());
-        protection.remove(region.key);
+        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
+        leukocyte.removeRegion(region.key);
 
         context.getSource().sendFeedback(new LiteralText("Removed region " + region.key), true);
 
@@ -154,10 +154,10 @@ public final class ProtectCommand {
         ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
         int level = IntegerArgumentType.getInteger(context, "level");
 
-        ProtectionManager protection = ProtectionManager.get(context.getSource().getMinecraftServer());
+        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
 
         ProtectionRegion newRegion = new ProtectionRegion(region.key, level, region.scope, region.rules.copy());
-        protection.replace(region, newRegion);
+        leukocyte.replaceRegion(region, newRegion);
 
         context.getSource().sendFeedback(new LiteralText("Set level of " + region.key + " from " + region.level + " to " + level), true);
 
@@ -165,9 +165,9 @@ public final class ProtectCommand {
     }
 
     private static int listRegions(CommandContext<ServerCommandSource> context) {
-        ProtectionManager protection = ProtectionManager.get(context.getSource().getMinecraftServer());
+        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
 
-        Set<String> regionKeys = protection.getRegionKeys();
+        Set<String> regionKeys = leukocyte.getRegionKeys();
         if (regionKeys.isEmpty()) {
             context.getSource().sendError(new LiteralText("There are no regions!"));
             return Command.SINGLE_SUCCESS;
@@ -175,7 +175,7 @@ public final class ProtectCommand {
 
         MutableText text = new LiteralText("Listing " + regionKeys.size() + " registered regions:\n");
         for (String regionKey : regionKeys) {
-            ProtectionRegion region = protection.byKey(regionKey);
+            ProtectionRegion region = leukocyte.getRegionByKey(regionKey);
             if (region == null) {
                 continue;
             }
@@ -194,9 +194,9 @@ public final class ProtectCommand {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        ProtectionManager protection = ProtectionManager.get(source.getMinecraftServer());
+        Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
 
-        RuleSample sample = protection.sample(RuleQuery.forPlayer(player));
+        RuleSample sample = leukocyte.sample(RuleQuery.forPlayer(player));
         List<ProtectionRegion> regions = Lists.newArrayList(sample);
         if (regions.isEmpty()) {
             source.sendError(new LiteralText("There are no regions at your current location!"));

@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
@@ -31,10 +31,10 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
 
-        ProtectionManager protection = ProtectionManager.get(player.server);
+        Leukocyte leukocyte = Leukocyte.get(player.server);
 
         RuleQuery query = RuleQuery.forPlayer(player);
-        RuleResult result = protection.test(query, ProtectionRule.FALL_DAMAGE);
+        RuleResult result = leukocyte.test(query, ProtectionRule.FALL_DAMAGE);
         if (result == RuleResult.ALLOW) {
             ci.setReturnValue(false);
         } else if (result == RuleResult.DENY) {
@@ -50,11 +50,11 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
 
-        ProtectionManager protection = ProtectionManager.get(player.server);
+        Leukocyte leukocyte = Leukocyte.get(player.server);
 
-        // TODO: this will cause incompatibility with the event
+        // TODO: duplication with plasmid event?
         RuleQuery query = RuleQuery.forPlayer(player);
-        RuleResult result = protection.test(query, ProtectionRule.THROW_ITEMS);
+        RuleResult result = leukocyte.test(query, ProtectionRule.THROW_ITEMS);
         if (result == RuleResult.DENY) {
             int slot = player.inventory.selectedSlot;
             ItemStack stack = player.inventory.getStack(slot);

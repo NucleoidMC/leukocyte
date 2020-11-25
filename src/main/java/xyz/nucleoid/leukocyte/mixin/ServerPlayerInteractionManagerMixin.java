@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 
@@ -36,10 +36,10 @@ public class ServerPlayerInteractionManagerMixin {
             return;
         }
 
-        ProtectionManager protection = ProtectionManager.get(this.player.server);
+        Leukocyte leukocyte = Leukocyte.get(this.player.server);
 
         RuleQuery query = RuleQuery.forPlayerAt(this.player, pos);
-        if (protection.denies(query, ProtectionRule.BLOCK_DROPS)) {
+        if (leukocyte.denies(query, ProtectionRule.BLOCK_DROPS)) {
             ci.setReturnValue(true);
         }
     }
@@ -50,10 +50,10 @@ public class ServerPlayerInteractionManagerMixin {
             return;
         }
 
-        ProtectionManager protection = ProtectionManager.get(this.player.server);
+        Leukocyte leukocyte = Leukocyte.get(this.player.server);
 
         RuleQuery query = RuleQuery.forPlayerAt(player, hit.getBlockPos());
-        if (protection.denies(query, ProtectionRule.PLACE)) {
+        if (leukocyte.denies(query, ProtectionRule.PLACE)) {
             ci.setReturnValue(ActionResult.FAIL);
         }
     }
