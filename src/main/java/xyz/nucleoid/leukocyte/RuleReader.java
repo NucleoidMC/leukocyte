@@ -1,7 +1,5 @@
-package xyz.nucleoid.leukocyte.region;
+package xyz.nucleoid.leukocyte;
 
-import xyz.nucleoid.leukocyte.RuleQuery;
-import xyz.nucleoid.leukocyte.RuleSample;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
 

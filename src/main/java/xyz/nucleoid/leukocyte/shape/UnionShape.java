@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.scope;
+package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.text.LiteralText;
@@ -10,26 +10,26 @@ import net.minecraft.world.World;
 import java.util.Arrays;
 import java.util.List;
 
-public final class UnionScope implements ProtectionScope {
-    public static final Codec<UnionScope> CODEC = ProtectionScope.CODEC.listOf().xmap(
-            UnionScope::new,
+public final class UnionShape implements ProtectionShape {
+    public static final Codec<UnionShape> CODEC = ProtectionShape.CODEC.listOf().xmap(
+            UnionShape::new,
             union -> Arrays.asList(union.scopes)
     );
 
-    private final ProtectionScope[] scopes;
+    private final ProtectionShape[] scopes;
 
-    public UnionScope(ProtectionScope... scopes) {
+    public UnionShape(ProtectionShape... scopes) {
         this.scopes = scopes;
     }
 
-    private UnionScope(List<ProtectionScope> scopes) {
-        this(scopes.toArray(new ProtectionScope[0]));
+    private UnionShape(List<ProtectionShape> scopes) {
+        this(scopes.toArray(new ProtectionShape[0]));
     }
 
     @Override
-    public boolean contains(RegistryKey<World> dimension) {
-        for (ProtectionScope scope : this.scopes) {
-            if (scope.contains(dimension)) {
+    public boolean intersects(RegistryKey<World> dimension) {
+        for (ProtectionShape scope : this.scopes) {
+            if (scope.intersects(dimension)) {
                 return true;
             }
         }
@@ -38,7 +38,7 @@ public final class UnionScope implements ProtectionScope {
 
     @Override
     public boolean contains(RegistryKey<World> dimension, BlockPos pos) {
-        for (ProtectionScope scope : this.scopes) {
+        for (ProtectionShape scope : this.scopes) {
             if (scope.contains(dimension, pos)) {
                 return true;
             }
@@ -47,7 +47,7 @@ public final class UnionScope implements ProtectionScope {
     }
 
     @Override
-    public Codec<? extends ProtectionScope> getCodec() {
+    public Codec<? extends ProtectionShape> getCodec() {
         return CODEC;
     }
 
@@ -64,10 +64,10 @@ public final class UnionScope implements ProtectionScope {
     }
 
     @Override
-    public ProtectionScope union(ProtectionScope other) {
-        ProtectionScope[] scopes = new ProtectionScope[this.scopes.length + 1];
+    public ProtectionShape union(ProtectionShape other) {
+        ProtectionShape[] scopes = new ProtectionShape[this.scopes.length + 1];
         System.arraycopy(this.scopes, 0, scopes, 0, this.scopes.length);
         scopes[scopes.length - 1] = other;
-        return new UnionScope(scopes);
+        return new UnionShape(scopes);
     }
 }

@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.scope;
+package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.text.LiteralText;
@@ -8,16 +8,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 
-public final class GlobalScope implements ProtectionScope {
-    public static final GlobalScope INSTANCE = new GlobalScope();
+public final class UniversalShape implements ProtectionShape {
+    public static final UniversalShape INSTANCE = new UniversalShape();
 
-    public static Codec<GlobalScope> CODEC = Codec.unit(INSTANCE);
+    public static Codec<UniversalShape> CODEC = Codec.unit(INSTANCE);
 
-    private GlobalScope() {
+    private UniversalShape() {
     }
 
     @Override
-    public boolean contains(RegistryKey<World> dimension) {
+    public boolean intersects(RegistryKey<World> dimension) {
         return true;
     }
 
@@ -27,12 +27,12 @@ public final class GlobalScope implements ProtectionScope {
     }
 
     @Override
-    public Codec<? extends ProtectionScope> getCodec() {
+    public Codec<? extends ProtectionShape> getCodec() {
         return CODEC;
     }
 
     @Override
     public MutableText display() {
-        return new LiteralText("Global").formatted(Formatting.YELLOW);
+        return new LiteralText("Universal").formatted(Formatting.YELLOW);
     }
 }

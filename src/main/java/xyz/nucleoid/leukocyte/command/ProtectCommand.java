@@ -24,25 +24,25 @@ import net.minecraft.world.World;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.RuleSample;
-import xyz.nucleoid.leukocyte.command.argument.ProtectionRegionArgument;
+import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRuleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RoleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RuleResultArgument;
-import xyz.nucleoid.leukocyte.region.ProtectionRegion;
+import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
-import xyz.nucleoid.leukocyte.scope.ProtectionScope;
+import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class ProtectCommand {
-    private static final DynamicCommandExceptionType REGION_ALREADY_EXISTS = new DynamicCommandExceptionType(id -> {
-        return new LiteralMessage("Region with the id '" + id + "' already exists!");
+    private static final DynamicCommandExceptionType AUTHORITY_ALREADY_EXISTS = new DynamicCommandExceptionType(id -> {
+        return new LiteralMessage("Authority with the id '" + id + "' already exists!");
     });
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -51,8 +51,8 @@ public final class ProtectCommand {
             literal("protect")
                 .requires(source -> source.hasPermissionLevel(4))
                 .then(literal("add")
-                    .then(argument("region", StringArgumentType.string())
-                    .executes(ProtectCommand::addGlobal)
+                    .then(argument("authority", StringArgumentType.string())
+                    .executes(ProtectCommand::addUniversal)
                         .then(argument("dimension", DimensionArgumentType.dimension())
                             .executes(ProtectCommand::addDimension)
                                 .then(argument("min", BlockPosArgumentType.blockPos())
@@ -62,25 +62,25 @@ public final class ProtectCommand {
                     )
                 ))
                 .then(literal("remove")
-                    .then(ProtectionRegionArgument.argument("region")
+                    .then(AuthorityArgument.argument("authority")
                     .executes(ProtectCommand::remove)
                 ))
                 .then(literal("set")
                     .then(literal("rule")
-                        .then(ProtectionRegionArgument.argument("region")
+                        .then(AuthorityArgument.argument("authority")
                         .then(ProtectionRuleArgument.argument("rule")
                         .then(RuleResultArgument.argument("result")
                         .executes(ProtectCommand::setRule)
                     ))))
                     .then(literal("level")
-                        .then(ProtectionRegionArgument.argument("region")
+                        .then(AuthorityArgument.argument("authority")
                         .then(argument("level", IntegerArgumentType.integer())
                         .executes(ProtectCommand::setLevel)
                     )))
                 )
                 .then(literal("exclusion")
                     .then(literal("add")
-                        .then(ProtectionRegionArgument.argument("region")
+                        .then(AuthorityArgument.argument("authority")
                             .then(argument("player", GameProfileArgumentType.gameProfile())
                             .executes(ProtectCommand::addPlayerExclusion))
 
@@ -88,7 +88,7 @@ public final class ProtectCommand {
                             .executes(ProtectCommand::addRoleExclusion))
                     ))
                     .then(literal("remove")
-                        .then(ProtectionRegionArgument.argument("region")
+                        .then(AuthorityArgument.argument("authority")
                             .then(argument("player", GameProfileArgumentType.gameProfile())
                             .executes(ProtectCommand::removePlayerExclusion))
 
@@ -97,133 +97,133 @@ public final class ProtectCommand {
                     ))
                 )
                 .then(literal("display")
-                    .then(ProtectionRegionArgument.argument("region")
-                    .executes(ProtectCommand::displayRegion)
+                    .then(AuthorityArgument.argument("authority")
+                    .executes(ProtectCommand::displayAuthority)
                 ))
-                .then(literal("list").executes(ProtectCommand::listRegions))
-                .then(literal("test").then(literal("here").executes(ProtectCommand::testRegionsHere)))
+                .then(literal("list").executes(ProtectCommand::listAuthorities))
+                .then(literal("test").executes(ProtectCommand::testRulesHere))
         );
         // @formatter:on
     }
 
     private static int addBox(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        String key = StringArgumentType.getString(context, "region");
+        String key = StringArgumentType.getString(context, "authority");
         RegistryKey<World> dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
         BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
         BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addRegion(new ProtectionRegion(key, 0, ProtectionScope.box(dimension, min, max)))) {
-            context.getSource().sendFeedback(new LiteralText("Added region in " + dimension.getValue() + " " + key), true);
+        if (leukocyte.addAuthority(Authority.create(key).addShape(ProtectionShape.box(dimension, min, max)))) {
+            context.getSource().sendFeedback(new LiteralText("Added authority in " + dimension.getValue() + " " + key), true);
         } else {
-            throw REGION_ALREADY_EXISTS.create(key);
+            throw AUTHORITY_ALREADY_EXISTS.create(key);
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int addDimension(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        String key = StringArgumentType.getString(context, "region");
+        String key = StringArgumentType.getString(context, "authority");
         RegistryKey<World> dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addRegion(new ProtectionRegion(key, 0, ProtectionScope.dimension(dimension)))) {
-            context.getSource().sendFeedback(new LiteralText("Added region in " + dimension.getValue() + " " + key), true);
+        if (leukocyte.addAuthority(Authority.create(key).addShape(ProtectionShape.dimension(dimension)))) {
+            context.getSource().sendFeedback(new LiteralText("Added authority in " + dimension.getValue() + " " + key), true);
         } else {
-            throw REGION_ALREADY_EXISTS.create(key);
+            throw AUTHORITY_ALREADY_EXISTS.create(key);
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int addGlobal(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        String key = StringArgumentType.getString(context, "region");
+    private static int addUniversal(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        String key = StringArgumentType.getString(context, "authority");
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addRegion(new ProtectionRegion(key, 0, ProtectionScope.global()))) {
-            context.getSource().sendFeedback(new LiteralText("Added global region " + key), true);
+        if (leukocyte.addAuthority(Authority.create(key).addShape(ProtectionShape.global()))) {
+            context.getSource().sendFeedback(new LiteralText("Added universal authority " + key), true);
         } else {
-            throw REGION_ALREADY_EXISTS.create(key);
+            throw AUTHORITY_ALREADY_EXISTS.create(key);
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int remove(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Authority authority = AuthorityArgument.get(context, "authority");
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        leukocyte.removeRegion(region.key);
+        leukocyte.removeAuthority(authority.key);
 
-        context.getSource().sendFeedback(new LiteralText("Removed region " + region.key), true);
+        context.getSource().sendFeedback(new LiteralText("Removed authority " + authority.key), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int setRule(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Authority authority = AuthorityArgument.get(context, "authority");
 
         ProtectionRule rule = ProtectionRuleArgument.get(context, "rule");
         RuleResult result = RuleResultArgument.get(context, "result");
 
-        region.rules.put(rule, result);
-        context.getSource().sendFeedback(new LiteralText("Set rule " + rule.getKey() + " = " + result.getKey() + " for " + region.key), true);
+        authority.rules.put(rule, result);
+        context.getSource().sendFeedback(new LiteralText("Set rule " + rule.getKey() + " = " + result.getKey() + " for " + authority.key), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int setLevel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Authority authority = AuthorityArgument.get(context, "authority");
         int level = IntegerArgumentType.getInteger(context, "level");
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
 
-        ProtectionRegion newRegion = new ProtectionRegion(region.key, level, region.scope, region.rules.copy(), region.exclusions.copy());
-        leukocyte.replaceRegion(region, newRegion);
+        Authority newAuthority = authority.withLevel(level);
+        leukocyte.replaceAuthority(authority, newAuthority);
 
-        context.getSource().sendFeedback(new LiteralText("Set level of " + region.key + " from " + region.level + " to " + level), true);
+        context.getSource().sendFeedback(new LiteralText("Changed level of " + authority.key + " from " + authority.level + " to " + level), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int addPlayerExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Authority authority = AuthorityArgument.get(context, "authority");
         Collection<GameProfile> players = GameProfileArgumentType.getProfileArgument(context, "player");
 
         int count = 0;
         for (GameProfile player : players) {
-            if (region.exclusions.addPlayer(player)) {
+            if (authority.exclusions.addPlayer(player)) {
                 count++;
             }
         }
 
-        context.getSource().sendFeedback(new LiteralText("Added " + count + " player exclusions to " + region.key), true);
+        context.getSource().sendFeedback(new LiteralText("Added " + count + " player exclusions to " + authority.key), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int removePlayerExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Authority authority = AuthorityArgument.get(context, "authority");
         Collection<GameProfile> players = GameProfileArgumentType.getProfileArgument(context, "player");
 
         int count = 0;
         for (GameProfile player : players) {
-            if (region.exclusions.removePlayer(player)) {
+            if (authority.exclusions.removePlayer(player)) {
                 count++;
             }
         }
 
-        context.getSource().sendFeedback(new LiteralText("Removed " + count + " player exclusions from " + region.key), true);
+        context.getSource().sendFeedback(new LiteralText("Removed " + count + " player exclusions from " + authority.key), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int addRoleExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Authority authority = AuthorityArgument.get(context, "authority");
         String role = RoleArgument.get(context, "role");
 
-        if (region.exclusions.addRole(role)) {
-            context.getSource().sendFeedback(new LiteralText("Added '" + role + "' exclusion to " + region.key), true);
+        if (authority.exclusions.addRole(role)) {
+            context.getSource().sendFeedback(new LiteralText("Added '" + role + "' exclusion to " + authority.key), true);
         } else {
             context.getSource().sendError(new LiteralText("'" + role + "' is already excluded"));
         }
@@ -232,11 +232,11 @@ public final class ProtectCommand {
     }
 
     private static int removeRoleExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Authority authority = AuthorityArgument.get(context, "authority");
         String role = RoleArgument.get(context, "role");
 
-        if (region.exclusions.removeRole(role)) {
-            context.getSource().sendFeedback(new LiteralText("Removed '" + role + "' exclusion from " + region.key), true);
+        if (authority.exclusions.removeRole(role)) {
+            context.getSource().sendFeedback(new LiteralText("Removed '" + role + "' exclusion from " + authority.key), true);
         } else {
             context.getSource().sendError(new LiteralText("'" + role + "' is not excluded"));
         }
@@ -244,24 +244,22 @@ public final class ProtectCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int listRegions(CommandContext<ServerCommandSource> context) {
+    private static int listAuthorities(CommandContext<ServerCommandSource> context) {
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
 
-        Set<String> regionKeys = leukocyte.getRegionKeys();
-        if (regionKeys.isEmpty()) {
-            context.getSource().sendError(new LiteralText("There are no regions!"));
+        List<Authority> authorities = leukocyte.authorities()
+                .filter(authority -> !authority.isTransient)
+                .collect(Collectors.toList());
+
+        if (authorities.isEmpty()) {
+            context.getSource().sendError(new LiteralText("There are no authorities!"));
             return Command.SINGLE_SUCCESS;
         }
 
-        MutableText text = new LiteralText("Listing " + regionKeys.size() + " registered regions:\n");
-        for (String regionKey : regionKeys) {
-            ProtectionRegion region = leukocyte.getRegionByKey(regionKey);
-            if (region == null) {
-                continue;
-            }
-
-            text = text.append("  ").append(new LiteralText(regionKey).formatted(Formatting.AQUA)).append("@" + region.level + ": ")
-                    .append(region.scope.display())
+        MutableText text = new LiteralText("Listing " + authorities.size() + " registered authorities:\n");
+        for (Authority authority : authorities) {
+            text = text.append("  ").append(new LiteralText(authority.key).formatted(Formatting.AQUA)).append("@" + authority.level + ": ")
+                    .append(authority.shapes.display())
                     .append("\n");
         }
 
@@ -270,37 +268,37 @@ public final class ProtectCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int testRegionsHere(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int testRulesHere(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
         Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
 
         RuleSample sample = leukocyte.sample(RuleQuery.forPlayer(player));
-        List<ProtectionRegion> regions = Lists.newArrayList(sample);
-        if (regions.isEmpty()) {
-            source.sendError(new LiteralText("There are no regions that apply to you at your current location!"));
+        List<Authority> authorities = Lists.newArrayList(sample);
+        if (authorities.isEmpty()) {
+            source.sendError(new LiteralText("There are no authorities that apply to you at your current location!"));
             return Command.SINGLE_SUCCESS;
         }
 
         MutableText text = new LiteralText("Testing applicable rules at your current location:\n");
 
-        text = text.append(" from regions: ");
-        for (int i = 0; i < regions.size(); i++) {
-            String tail = i < regions.size() - 1 ? ", " : "\n\n";
+        text = text.append(" from authorities: ");
+        for (int i = 0; i < authorities.size(); i++) {
+            String tail = i < authorities.size() - 1 ? ", " : "\n\n";
 
-            ProtectionRegion region = regions.get(i);
-            text.append(new LiteralText(region.key).formatted(Formatting.AQUA)).append(tail);
+            Authority authority = authorities.get(i);
+            text.append(new LiteralText(authority.key).formatted(Formatting.AQUA)).append(tail);
         }
 
         boolean empty = true;
         for (ProtectionRule rule : ProtectionRule.REGISTRY) {
-            for (ProtectionRegion region : regions) {
-                RuleResult result = region.rules.test(rule);
+            for (Authority authority : authorities) {
+                RuleResult result = authority.rules.test(rule);
                 if (result != RuleResult.PASS) {
                     text = text.append("  ").append(new LiteralText(rule.getKey()).formatted(Formatting.AQUA))
                             .append(" = ").append(new LiteralText(result.getKey()).formatted(result.getFormatting()))
-                            .append(" (" + region.key + ")\n");
+                            .append(" (" + authority.key + ")\n");
                     empty = false;
                     break;
                 }
@@ -316,14 +314,14 @@ public final class ProtectCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int displayRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+    private static int displayAuthority(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Authority authority = AuthorityArgument.get(context, "authority");
 
         context.getSource().sendFeedback(
-                new LiteralText("Information for '" + region.key + "':\n")
-                        .append(" Level: ").append(new LiteralText(String.valueOf(region.level)).formatted(Formatting.AQUA)).append("\n")
-                        .append(" Scope: ").append(region.scope.display()).append("\n")
-                        .append(" Rules:\n").append(region.rules.display()),
+                new LiteralText("Information for '" + authority.key + "':\n")
+                        .append(" Level: ").append(new LiteralText(String.valueOf(authority.level)).formatted(Formatting.AQUA)).append("\n")
+                        .append(" Scope: ").append(authority.shapes.display()).append("\n")
+                        .append(" Rules:\n").append(authority.rules.display()),
                 false
         );
 

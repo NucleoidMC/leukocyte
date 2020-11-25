@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.scope;
+package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -11,27 +11,27 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 
-public final class BoxScope implements ProtectionScope {
-    public static final Codec<BoxScope> CODEC = RecordCodecBuilder.create(instance -> {
+public final class BoxShape implements ProtectionShape {
+    public static final Codec<BoxShape> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Identifier.CODEC.xmap(id -> RegistryKey.of(Registry.DIMENSION, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension),
                 BlockPos.CODEC.fieldOf("min").forGetter(scope -> scope.min),
                 BlockPos.CODEC.fieldOf("max").forGetter(scope -> scope.max)
-        ).apply(instance, BoxScope::new);
+        ).apply(instance, BoxShape::new);
     });
 
     private final RegistryKey<World> dimension;
     private final BlockPos min;
     private final BlockPos max;
 
-    public BoxScope(RegistryKey<World> dimension, BlockPos min, BlockPos max) {
+    public BoxShape(RegistryKey<World> dimension, BlockPos min, BlockPos max) {
         this.dimension = dimension;
         this.min = min;
         this.max = max;
     }
 
     @Override
-    public boolean contains(RegistryKey<World> dimension) {
+    public boolean intersects(RegistryKey<World> dimension) {
         return this.dimension == dimension;
     }
 
@@ -43,7 +43,7 @@ public final class BoxScope implements ProtectionScope {
     }
 
     @Override
-    public Codec<? extends ProtectionScope> getCodec() {
+    public Codec<? extends ProtectionShape> getCodec() {
         return CODEC;
     }
 

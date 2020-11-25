@@ -21,17 +21,16 @@ import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.leukocyte.region.ProtectionRegion;
-import xyz.nucleoid.leukocyte.region.RegionMap;
-import xyz.nucleoid.leukocyte.region.RuleReader;
+import xyz.nucleoid.leukocyte.authority.Authority;
+import xyz.nucleoid.leukocyte.authority.AuthorityMap;
 
-import java.util.Set;
+import java.util.stream.Stream;
 
 public final class Leukocyte extends PersistentState implements RuleReader {
     public static final String ID = "leukocyte";
 
-    private final RegionMap regions = new RegionMap();
-    private final Reference2ObjectMap<RegistryKey<World>, RegionMap> regionsByDimension = new Reference2ObjectOpenHashMap<>();
+    private final AuthorityMap authorities = new AuthorityMap();
+    private final Reference2ObjectMap<RegistryKey<World>, AuthorityMap> authoritiesByDimension = new Reference2ObjectOpenHashMap<>();
 
     static {
         ServerWorldEvents.LOAD.register((server, world) -> Leukocyte.get(server).onWorldLoad(world));
@@ -60,26 +59,26 @@ public final class Leukocyte extends PersistentState implements RuleReader {
     private void onWorldLoad(ServerWorld world) {
         RegistryKey<World> dimension = world.getRegistryKey();
 
-        RegionMap map = new RegionMap();
-        for (ProtectionRegion region : this.regions) {
-            if (region.scope.contains(dimension)) {
-                map.add(region);
+        AuthorityMap map = new AuthorityMap();
+        for (Authority authority : this.authorities) {
+            if (authority.shapes.intersects(dimension)) {
+                map.add(authority);
             }
         }
 
-        this.regionsByDimension.put(dimension, map);
+        this.authoritiesByDimension.put(dimension, map);
     }
 
     private void onWorldUnload(ServerWorld world) {
-        this.regionsByDimension.remove(world.getRegistryKey());
+        this.authoritiesByDimension.remove(world.getRegistryKey());
     }
 
-    public boolean addRegion(ProtectionRegion region) {
-        if (this.regions.add(region)) {
-            for (Reference2ObjectMap.Entry<RegistryKey<World>, RegionMap> entry : Reference2ObjectMaps.fastIterable(this.regionsByDimension)) {
+    public boolean addAuthority(Authority authority) {
+        if (this.authorities.add(authority)) {
+            for (Reference2ObjectMap.Entry<RegistryKey<World>, AuthorityMap> entry : Reference2ObjectMaps.fastIterable(this.authoritiesByDimension)) {
                 RegistryKey<World> dimension = entry.getKey();
-                if (region.scope.contains(dimension)) {
-                    entry.getValue().add(region);
+                if (authority.shapes.intersects(dimension)) {
+                    entry.getValue().add(authority);
                 }
             }
             return true;
@@ -87,35 +86,39 @@ public final class Leukocyte extends PersistentState implements RuleReader {
         return false;
     }
 
-    public boolean removeRegion(String key) {
-        if (this.regions.remove(key) != null) {
-            for (RegionMap regions : this.regionsByDimension.values()) {
-                regions.remove(key);
+    public boolean removeAuthority(Authority authority) {
+        return this.removeAuthority(authority.key);
+    }
+
+    public boolean removeAuthority(String key) {
+        if (this.authorities.remove(key) != null) {
+            for (AuthorityMap authorities : this.authoritiesByDimension.values()) {
+                authorities.remove(key);
             }
             return true;
         }
         return false;
     }
 
-    public void replaceRegion(ProtectionRegion from, ProtectionRegion to) {
-        if (this.regions.replace(from, to)) {
-            for (RegionMap regions : this.regionsByDimension.values()) {
-                regions.replace(from, to);
+    public void replaceAuthority(Authority from, Authority to) {
+        if (this.authorities.replace(from, to)) {
+            for (AuthorityMap authorities : this.authoritiesByDimension.values()) {
+                authorities.replace(from, to);
             }
         }
     }
 
     @Nullable
-    public ProtectionRegion getRegionByKey(String key) {
-        return this.regions.byKey(key);
+    public Authority getAuthorityByKey(String key) {
+        return this.authorities.byKey(key);
     }
 
-    private RegionMap regionsByDimension(RegistryKey<World> dimension) {
-        RegionMap regionsByDimension = this.regionsByDimension.get(dimension);
-        if (regionsByDimension == null) {
-            this.regionsByDimension.put(dimension, regionsByDimension = new RegionMap());
+    private AuthorityMap authoritiesByDimension(RegistryKey<World> dimension) {
+        AuthorityMap authoritiesByDimension = this.authoritiesByDimension.get(dimension);
+        if (authoritiesByDimension == null) {
+            this.authoritiesByDimension.put(dimension, authoritiesByDimension = new AuthorityMap());
         }
-        return regionsByDimension;
+        return authoritiesByDimension;
     }
 
     @Override
@@ -132,8 +135,8 @@ public final class Leukocyte extends PersistentState implements RuleReader {
     }
 
     private RuleSample sampleInDimension(RuleQuery query, RegistryKey<World> dimension) {
-        RegionMap regionInDimension = this.regionsByDimension(dimension);
-        if (regionInDimension.isEmpty()) {
+        AuthorityMap authoritiesInDimension = this.authoritiesByDimension(dimension);
+        if (authoritiesInDimension.isEmpty()) {
             return RuleSample.EMPTY;
         }
 
@@ -141,41 +144,46 @@ public final class Leukocyte extends PersistentState implements RuleReader {
         PlayerEntity source = query.getSource();
 
         if (pos != null) {
-            return new RuleSample.FilterPositionAndExclude(regionInDimension, source, dimension, pos);
+            return new RuleSample.FilterPositionAndExclude(authoritiesInDimension, source, dimension, pos);
         } else {
-            return new RuleSample.FilterExclude(regionInDimension, source);
+            return new RuleSample.FilterExclude(authoritiesInDimension, source);
         }
     }
 
     private RuleSample sampleGlobal(RuleQuery query) {
-        return new RuleSample.FilterExclude(this.regions, query.getSource());
+        return new RuleSample.FilterExclude(this.authorities, query.getSource());
     }
 
     @Override
     public CompoundTag toTag(CompoundTag root) {
-        ListTag regionList = new ListTag();
+        ListTag authorityList = new ListTag();
 
-        for (ProtectionRegion region : this.regions) {
-            DataResult<Tag> result = ProtectionRegion.CODEC.encodeStart(NbtOps.INSTANCE, region);
-            result.result().ifPresent(regionList::add);
+        for (Authority authority : this.authorities) {
+            if (authority.isTransient) {
+                continue;
+            }
+
+            DataResult<Tag> result = Authority.CODEC.encodeStart(NbtOps.INSTANCE, authority);
+            result.result().ifPresent(authorityList::add);
         }
 
-        root.put("regions", regionList);
+        root.put("authorities", authorityList);
 
         return root;
     }
 
     @Override
     public void fromTag(CompoundTag root) {
-        this.regions.clear();
-        this.regionsByDimension.clear();
+        this.authorities.clear();
+        this.authoritiesByDimension.clear();
 
-        ListTag regionsList = root.getList("regions", NbtType.COMPOUND);
-        for (Tag regionTag : regionsList) {
-            ProtectionRegion.CODEC.decode(NbtOps.INSTANCE, regionTag)
+        ListTag authoritiesList = root.getList("authorities", NbtType.COMPOUND);
+
+        for (Tag authorityTag : authoritiesList) {
+            Authority.CODEC.decode(NbtOps.INSTANCE, authorityTag)
                     .map(Pair::getFirst)
                     .result()
-                    .ifPresent(this::addRegion);
+                    .ifPresent(this::addAuthority);
         }
     }
 
@@ -184,7 +192,7 @@ public final class Leukocyte extends PersistentState implements RuleReader {
         return true;
     }
 
-    public Set<String> getRegionKeys() {
-        return this.regions.getKeys();
+    public Stream<Authority> authorities() {
+        return this.authorities.stream();
     }
 }

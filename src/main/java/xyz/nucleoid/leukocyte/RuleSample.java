@@ -5,19 +5,19 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-import xyz.nucleoid.leukocyte.region.ProtectionRegion;
+import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
 
 import java.util.Collections;
 import java.util.Iterator;
 
-public interface RuleSample extends Iterable<ProtectionRegion> {
+public interface RuleSample extends Iterable<Authority> {
     RuleSample EMPTY = Collections::emptyIterator;
 
     default RuleResult test(ProtectionRule rule) {
-        for (ProtectionRegion region : this) {
-            RuleResult result = region.rules.test(rule);
+        for (Authority authority : this) {
+            RuleResult result = authority.rules.test(rule);
             if (result != RuleResult.PASS) {
                 return result;
             }
@@ -34,24 +34,24 @@ public interface RuleSample extends Iterable<ProtectionRegion> {
     }
 
     abstract class Filtered implements RuleSample {
-        final Iterable<ProtectionRegion> regions;
+        final Iterable<Authority> authorities;
 
-        Filtered(Iterable<ProtectionRegion> regions) {
-            this.regions = regions;
+        Filtered(Iterable<Authority> authorities) {
+            this.authorities = authorities;
         }
 
-        protected abstract boolean test(ProtectionRegion region);
+        protected abstract boolean test(Authority authority);
 
         @Override
-        public Iterator<ProtectionRegion> iterator() {
-            Iterator<ProtectionRegion> iterator = this.regions.iterator();
-            return new AbstractIterator<ProtectionRegion>() {
+        public Iterator<Authority> iterator() {
+            Iterator<Authority> iterator = this.authorities.iterator();
+            return new AbstractIterator<Authority>() {
                 @Override
-                protected ProtectionRegion computeNext() {
+                protected Authority computeNext() {
                     while (iterator.hasNext()) {
-                        ProtectionRegion region = iterator.next();
-                        if (Filtered.this.test(region)) {
-                            return region;
+                        Authority authority = iterator.next();
+                        if (Filtered.this.test(authority)) {
+                            return authority;
                         }
                     }
                     return this.endOfData();
@@ -63,19 +63,19 @@ public interface RuleSample extends Iterable<ProtectionRegion> {
     final class FilterExclude extends Filtered {
         private final PlayerEntity source;
 
-        FilterExclude(Iterable<ProtectionRegion> regions, PlayerEntity source) {
-            super(regions);
+        FilterExclude(Iterable<Authority> authorities, PlayerEntity source) {
+            super(authorities);
             this.source = source;
         }
 
         @Override
-        protected boolean test(ProtectionRegion region) {
-            return !region.exclusions.isExcluded(this.source);
+        protected boolean test(Authority authority) {
+            return !authority.exclusions.isExcluded(this.source);
         }
 
         @Override
-        public Iterator<ProtectionRegion> iterator() {
-            return this.source != null ? super.iterator() : this.regions.iterator();
+        public Iterator<Authority> iterator() {
+            return this.source != null ? super.iterator() : this.authorities.iterator();
         }
     }
 
@@ -84,19 +84,19 @@ public interface RuleSample extends Iterable<ProtectionRegion> {
         private final RegistryKey<World> dimension;
         private final BlockPos pos;
 
-        FilterPositionAndExclude(Iterable<ProtectionRegion> regions, PlayerEntity source, RegistryKey<World> dimension, BlockPos pos) {
-            super(regions);
+        FilterPositionAndExclude(Iterable<Authority> authorities, PlayerEntity source, RegistryKey<World> dimension, BlockPos pos) {
+            super(authorities);
             this.source = source;
             this.dimension = dimension;
             this.pos = pos;
         }
 
         @Override
-        protected boolean test(ProtectionRegion region) {
-            if (!region.scope.contains(this.dimension, this.pos)) {
+        protected boolean test(Authority authority) {
+            if (!authority.shapes.contains(this.dimension, this.pos)) {
                 return false;
             }
-            return this.source == null || !region.exclusions.isExcluded(this.source);
+            return this.source == null || !authority.exclusions.isExcluded(this.source);
         }
     }
 }

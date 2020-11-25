@@ -10,11 +10,11 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import xyz.nucleoid.leukocyte.Leukocyte;
-import xyz.nucleoid.leukocyte.region.ProtectionRegion;
+import xyz.nucleoid.leukocyte.authority.Authority;
 
-public final class ProtectionRegionArgument {
-    public static final DynamicCommandExceptionType REGION_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Region with key '%s' was not found!", arg)
+public final class AuthorityArgument {
+    public static final DynamicCommandExceptionType AUTHORITY_NOT_FOUND = new DynamicCommandExceptionType(arg ->
+            new TranslatableText("Authority with key '%s' was not found!", arg)
     );
 
     public static RequiredArgumentBuilder<ServerCommandSource, String> argument(String name) {
@@ -24,23 +24,23 @@ public final class ProtectionRegionArgument {
                     Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
 
                     return CommandSource.suggestMatching(
-                            leukocyte.getRegionKeys().stream(),
+                            leukocyte.authorities().filter(authority -> !authority.isTransient).map(authority -> authority.key),
                             builder
                     );
                 });
     }
 
-    public static ProtectionRegion get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static Authority get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         String key = StringArgumentType.getString(context, name);
 
         ServerCommandSource source = context.getSource();
         Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
 
-        ProtectionRegion region = leukocyte.getRegionByKey(key);
-        if (region == null) {
-            throw REGION_NOT_FOUND.create(key);
+        Authority authority = leukocyte.getAuthorityByKey(key);
+        if (authority == null) {
+            throw AUTHORITY_NOT_FOUND.create(key);
         }
 
-        return region;
+        return authority;
     }
 }

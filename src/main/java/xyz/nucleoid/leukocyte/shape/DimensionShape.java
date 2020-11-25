@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.scope;
+package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -11,31 +11,31 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 
-public final class DimensionScope implements ProtectionScope {
-    public static final Codec<DimensionScope> CODEC = RecordCodecBuilder.create(instance -> {
+public final class DimensionShape implements ProtectionShape {
+    public static final Codec<DimensionShape> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Identifier.CODEC.xmap(id -> RegistryKey.of(Registry.DIMENSION, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension)
-        ).apply(instance, DimensionScope::new);
+        ).apply(instance, DimensionShape::new);
     });
 
     private final RegistryKey<World> dimension;
 
-    public DimensionScope(RegistryKey<World> dimension) {
+    public DimensionShape(RegistryKey<World> dimension) {
         this.dimension = dimension;
     }
 
     @Override
-    public boolean contains(RegistryKey<World> dimension) {
+    public boolean intersects(RegistryKey<World> dimension) {
         return this.dimension == dimension;
     }
 
     @Override
     public boolean contains(RegistryKey<World> dimension, BlockPos pos) {
-        return this.contains(dimension);
+        return this.intersects(dimension);
     }
 
     @Override
-    public Codec<? extends ProtectionScope> getCodec() {
+    public Codec<? extends ProtectionShape> getCodec() {
         return CODEC;
     }
 
