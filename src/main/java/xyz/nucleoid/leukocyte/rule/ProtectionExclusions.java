@@ -53,9 +53,9 @@ public final class ProtectionExclusions {
     }
 
     public boolean isExcluded(PlayerEntity player) {
-//        if (player.hasPermissionLevel(4)) {
-//            return true;
-//        }
+        if (player.hasPermissionLevel(4)) {
+            return true;
+        }
 
         if (this.players.contains(player.getUuid())) {
             return true;
