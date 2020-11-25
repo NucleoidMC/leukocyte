@@ -1,6 +1,7 @@
 package xyz.nucleoid.leukocyte.command;
 
 import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.LiteralMessage;
@@ -11,6 +12,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.DimensionArgumentType;
+import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -24,12 +26,14 @@ import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.RuleSample;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRegionArgument;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRuleArgument;
+import xyz.nucleoid.leukocyte.command.argument.RoleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RuleResultArgument;
 import xyz.nucleoid.leukocyte.region.ProtectionRegion;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
 import xyz.nucleoid.leukocyte.scope.ProtectionScope;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -74,6 +78,24 @@ public final class ProtectCommand {
                         .executes(ProtectCommand::setLevel)
                     )))
                 )
+                .then(literal("exclusion")
+                    .then(literal("add")
+                        .then(ProtectionRegionArgument.argument("region")
+                            .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .executes(ProtectCommand::addPlayerExclusion))
+
+                            .then(RoleArgument.argument("role")
+                            .executes(ProtectCommand::addRoleExclusion))
+                    ))
+                    .then(literal("remove")
+                        .then(ProtectionRegionArgument.argument("region")
+                            .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .executes(ProtectCommand::removePlayerExclusion))
+
+                            .then(RoleArgument.argument("role")
+                            .executes(ProtectCommand::removeRoleExclusion))
+                    ))
+                )
                 .then(literal("display")
                     .then(ProtectionRegionArgument.argument("region")
                     .executes(ProtectCommand::displayRegion)
@@ -91,7 +113,7 @@ public final class ProtectCommand {
         BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addRegion(new ProtectionRegion(key, ProtectionScope.box(dimension, min, max), 0))) {
+        if (leukocyte.addRegion(new ProtectionRegion(key, 0, ProtectionScope.box(dimension, min, max)))) {
             context.getSource().sendFeedback(new LiteralText("Added region in " + dimension.getValue() + " " + key), true);
         } else {
             throw REGION_ALREADY_EXISTS.create(key);
@@ -105,7 +127,7 @@ public final class ProtectCommand {
         RegistryKey<World> dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addRegion(new ProtectionRegion(key, ProtectionScope.dimension(dimension), 0))) {
+        if (leukocyte.addRegion(new ProtectionRegion(key, 0, ProtectionScope.dimension(dimension)))) {
             context.getSource().sendFeedback(new LiteralText("Added region in " + dimension.getValue() + " " + key), true);
         } else {
             throw REGION_ALREADY_EXISTS.create(key);
@@ -118,8 +140,8 @@ public final class ProtectCommand {
         String key = StringArgumentType.getString(context, "region");
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addRegion(new ProtectionRegion(key, ProtectionScope.global(), 0))) {
-            context.getSource().sendFeedback(new LiteralText("Added global region " + key + "@"), true);
+        if (leukocyte.addRegion(new ProtectionRegion(key, 0, ProtectionScope.global()))) {
+            context.getSource().sendFeedback(new LiteralText("Added global region " + key), true);
         } else {
             throw REGION_ALREADY_EXISTS.create(key);
         }
@@ -156,10 +178,68 @@ public final class ProtectCommand {
 
         Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
 
-        ProtectionRegion newRegion = new ProtectionRegion(region.key, level, region.scope, region.rules.copy());
+        ProtectionRegion newRegion = new ProtectionRegion(region.key, level, region.scope, region.rules.copy(), region.exclusions.copy());
         leukocyte.replaceRegion(region, newRegion);
 
         context.getSource().sendFeedback(new LiteralText("Set level of " + region.key + " from " + region.level + " to " + level), true);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int addPlayerExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Collection<GameProfile> players = GameProfileArgumentType.getProfileArgument(context, "player");
+
+        int count = 0;
+        for (GameProfile player : players) {
+            if (region.exclusions.addPlayer(player)) {
+                count++;
+            }
+        }
+
+        context.getSource().sendFeedback(new LiteralText("Added " + count + " player exclusions to " + region.key), true);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int removePlayerExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        Collection<GameProfile> players = GameProfileArgumentType.getProfileArgument(context, "player");
+
+        int count = 0;
+        for (GameProfile player : players) {
+            if (region.exclusions.removePlayer(player)) {
+                count++;
+            }
+        }
+
+        context.getSource().sendFeedback(new LiteralText("Removed " + count + " player exclusions from " + region.key), true);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int addRoleExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        String role = RoleArgument.get(context, "role");
+
+        if (region.exclusions.addRole(role)) {
+            context.getSource().sendFeedback(new LiteralText("Added '" + role + "' exclusion to " + region.key), true);
+        } else {
+            context.getSource().sendError(new LiteralText("'" + role + "' is already excluded"));
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int removeRoleExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ProtectionRegion region = ProtectionRegionArgument.get(context, "region");
+        String role = RoleArgument.get(context, "role");
+
+        if (region.exclusions.removeRole(role)) {
+            context.getSource().sendFeedback(new LiteralText("Removed '" + role + "' exclusion from " + region.key), true);
+        } else {
+            context.getSource().sendError(new LiteralText("'" + role + "' is not excluded"));
+        }
 
         return Command.SINGLE_SUCCESS;
     }
@@ -199,11 +279,11 @@ public final class ProtectCommand {
         RuleSample sample = leukocyte.sample(RuleQuery.forPlayer(player));
         List<ProtectionRegion> regions = Lists.newArrayList(sample);
         if (regions.isEmpty()) {
-            source.sendError(new LiteralText("There are no regions at your current location!"));
+            source.sendError(new LiteralText("There are no regions that apply to you at your current location!"));
             return Command.SINGLE_SUCCESS;
         }
 
-        MutableText text = new LiteralText("Testing rules at your current location:\n");
+        MutableText text = new LiteralText("Testing applicable rules at your current location:\n");
 
         text = text.append(" from regions: ");
         for (int i = 0; i < regions.size(); i++) {
@@ -215,7 +295,6 @@ public final class ProtectCommand {
 
         boolean empty = true;
         for (ProtectionRule rule : ProtectionRule.REGISTRY) {
-            // TODO: test for bypass
             for (ProtectionRegion region : regions) {
                 RuleResult result = region.rules.test(rule);
                 if (result != RuleResult.PASS) {

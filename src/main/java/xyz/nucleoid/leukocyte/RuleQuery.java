@@ -5,7 +5,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.leukocyte.region.ProtectionRegion;
 
 public final class RuleQuery {
     private final RegistryKey<World> dimension;
@@ -52,7 +51,8 @@ public final class RuleQuery {
         return this.pos;
     }
 
-    RuleSample asSample(Iterable<ProtectionRegion> regions) {
-        return new RuleSample(this.source, regions);
+    @Nullable
+    PlayerEntity getSource() {
+        return this.source;
     }
 }

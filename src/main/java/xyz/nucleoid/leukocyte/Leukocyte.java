@@ -1,6 +1,5 @@
 package xyz.nucleoid.leukocyte;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
@@ -8,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -25,8 +25,6 @@ import xyz.nucleoid.leukocyte.region.ProtectionRegion;
 import xyz.nucleoid.leukocyte.region.RegionMap;
 import xyz.nucleoid.leukocyte.region.RuleReader;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public final class Leukocyte extends PersistentState implements RuleReader {
@@ -130,32 +128,27 @@ public final class Leukocyte extends PersistentState implements RuleReader {
             return this.sampleGlobal(query);
         }
 
-        return query.asSample(ImmutableList.of());
+        return RuleSample.EMPTY;
     }
 
     private RuleSample sampleInDimension(RuleQuery query, RegistryKey<World> dimension) {
         RegionMap regionInDimension = this.regionsByDimension(dimension);
         if (regionInDimension.isEmpty()) {
-            return query.asSample(ImmutableList.of());
+            return RuleSample.EMPTY;
         }
 
         BlockPos pos = query.getPos();
+        PlayerEntity source = query.getSource();
+
         if (pos != null) {
-            List<ProtectionRegion> regions = new ArrayList<>();
-            for (ProtectionRegion region : regionInDimension) {
-                if (region.scope.contains(dimension, pos)) {
-                    regions.add(region);
-                }
-            }
-            return query.asSample(regions);
+            return new RuleSample.FilterPositionAndExclude(regionInDimension, source, dimension, pos);
         } else {
-            return query.asSample(regionInDimension);
+            return new RuleSample.FilterExclude(regionInDimension, source);
         }
     }
 
     private RuleSample sampleGlobal(RuleQuery query) {
-        RegionMap regions = this.regions;
-        return query.asSample(regions);
+        return new RuleSample.FilterExclude(this.regions, query.getSource());
     }
 
     @Override
