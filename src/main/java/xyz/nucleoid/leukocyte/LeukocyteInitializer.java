@@ -9,10 +9,16 @@ import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.leukocyte.command.ProtectCommand;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
+import xyz.nucleoid.leukocyte.shape.*;
 
-public final class LeukocyteInitializer implements ModInitializer  {
+public final class LeukocyteInitializer implements ModInitializer {
     @Override
     public void onInitialize() {
+        ProtectionShape.register("universal", UniversalShape.CODEC);
+        ProtectionShape.register("dimension", DimensionShape.CODEC);
+        ProtectionShape.register("box", BoxShape.CODEC);
+        ProtectionShape.register("union", UnionShape.CODEC);
+
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             ProtectCommand.register(dispatcher);
         });

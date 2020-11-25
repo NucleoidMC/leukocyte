@@ -5,11 +5,17 @@ import net.minecraft.text.MutableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import xyz.nucleoid.leukocyte.util.TinyRegistry;
 
 import java.util.function.Function;
 
 public interface ProtectionShape {
-    Codec<ProtectionShape> CODEC = ProtectionShapeRegistry.REGISTRY.dispatchStable(ProtectionShape::getCodec, Function.identity());
+    TinyRegistry<Codec<? extends ProtectionShape>> REGISTRY = TinyRegistry.newStable();
+    Codec<ProtectionShape> CODEC = REGISTRY.dispatchStable(ProtectionShape::getCodec, Function.identity());
+
+    static <T extends ProtectionShape> void register(String identifier, Codec<T> codec) {
+        REGISTRY.register(identifier, codec);
+    }
 
     static ProtectionShape global() {
         return UniversalShape.INSTANCE;
