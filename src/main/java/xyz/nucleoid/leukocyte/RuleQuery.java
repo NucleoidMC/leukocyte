@@ -1,0 +1,58 @@
+package xyz.nucleoid.leukocyte;
+
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.leukocyte.region.ProtectionRegion;
+
+public final class RuleQuery {
+    private final RegistryKey<World> dimension;
+    private final BlockPos pos;
+    private final ServerPlayerEntity source;
+
+    RuleQuery(RegistryKey<World> dimension, BlockPos pos, ServerPlayerEntity source) {
+        this.dimension = dimension;
+        this.pos = pos;
+        this.source = source;
+    }
+
+    public static RuleQuery at(World world, BlockPos pos) {
+        return new RuleQuery(world.getRegistryKey(), pos, null);
+    }
+
+    public static RuleQuery at(RegistryKey<World> dimension, BlockPos pos) {
+        return new RuleQuery(dimension, pos, null);
+    }
+
+    public static RuleQuery in(World world) {
+        return new RuleQuery(world.getRegistryKey(), null, null);
+    }
+
+    public static RuleQuery in(RegistryKey<World> dimension) {
+        return new RuleQuery(dimension, null, null);
+    }
+
+    public static RuleQuery forPlayer(ServerPlayerEntity player) {
+        return new RuleQuery(player.world.getRegistryKey(), player.getBlockPos(), player);
+    }
+
+    public static RuleQuery forPlayerAt(ServerPlayerEntity player, BlockPos pos) {
+        return new RuleQuery(player.world.getRegistryKey(), pos, player);
+    }
+
+    @Nullable
+    public RegistryKey<World> getDimension() {
+        return this.dimension;
+    }
+
+    @Nullable
+    public BlockPos getPos() {
+        return this.pos;
+    }
+
+    RuleSample asSample(Iterable<ProtectionRegion> regions) {
+        return new RuleSample(this.source, regions);
+    }
+}

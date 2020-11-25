@@ -2,12 +2,10 @@ package xyz.nucleoid.leukocyte.rule;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -32,12 +30,7 @@ public final class ProtectionRuleMap {
     }
 
     @NotNull
-    public RuleResult test(ProtectionRule rule, @Nullable ServerPlayerEntity source) {
-        // TODO: duplicated logic
-        if (source != null && source.hasPermissionLevel(4)) {
-            return RuleResult.PASS;
-        }
-
+    public RuleResult test(ProtectionRule rule) {
         return this.map.getOrDefault(rule, RuleResult.PASS);
     }
 

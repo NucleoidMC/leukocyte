@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
-import xyz.nucleoid.leukocyte.rule.RuleResult;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
@@ -37,8 +37,9 @@ public class ServerPlayerInteractionManagerMixin {
         }
 
         ProtectionManager protection = ProtectionManager.get(this.player.server);
-        RuleResult result = protection.test(this.player.world, pos, ProtectionRule.BLOCK_DROPS, this.player);
-        if (result == RuleResult.DENY) {
+
+        RuleQuery query = RuleQuery.forPlayerAt(this.player, pos);
+        if (protection.denies(query, ProtectionRule.BLOCK_DROPS)) {
             ci.setReturnValue(true);
         }
     }
@@ -50,8 +51,9 @@ public class ServerPlayerInteractionManagerMixin {
         }
 
         ProtectionManager protection = ProtectionManager.get(this.player.server);
-        RuleResult result = protection.test(this.player.world, hit.getBlockPos(), ProtectionRule.PLACE, this.player);
-        if (result == RuleResult.DENY) {
+
+        RuleQuery query = RuleQuery.forPlayerAt(player, hit.getBlockPos());
+        if (protection.denies(query, ProtectionRule.PLACE)) {
             ci.setReturnValue(ActionResult.FAIL);
         }
     }

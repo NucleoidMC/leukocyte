@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
-import xyz.nucleoid.leukocyte.rule.RuleResult;
 
 @Mixin(HungerManager.class)
 public class HungerManagerMixin {
@@ -31,8 +31,8 @@ public class HungerManagerMixin {
 
             ProtectionManager protection = ProtectionManager.get(serverPlayer.server);
 
-            RuleResult result = protection.test(player.world, player.getBlockPos(), ProtectionRule.HUNGER, serverPlayer);
-            if (result == RuleResult.DENY) {
+            RuleQuery query = RuleQuery.forPlayer(serverPlayer);
+            if (protection.denies(query, ProtectionRule.HUNGER)) {
                 this.exhaustion = 0.0F;
                 this.foodSaturationLevel = 0.0F;
             }

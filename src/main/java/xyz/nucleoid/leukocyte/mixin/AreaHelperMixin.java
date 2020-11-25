@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
-import xyz.nucleoid.leukocyte.rule.RuleResult;
 
 @Mixin(AreaHelper.class)
 public class AreaHelperMixin {
@@ -34,8 +34,9 @@ public class AreaHelperMixin {
         ServerWorld serverWorld = ((ServerWorldAccess) this.world).toServerWorld();
 
         ProtectionManager protection = ProtectionManager.get(serverWorld.getServer());
-        RuleResult result = protection.test(serverWorld, this.lowerCorner, ProtectionRule.PORTALS, null);
-        if (result == RuleResult.DENY) {
+
+        RuleQuery query = RuleQuery.at(serverWorld, this.lowerCorner);
+        if (protection.denies(query, ProtectionRule.PORTALS)) {
             ci.setReturnValue(false);
         }
     }

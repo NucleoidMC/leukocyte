@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
 
@@ -32,7 +33,8 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
         ProtectionManager protection = ProtectionManager.get(player.server);
 
-        RuleResult result = protection.test(this.world, player.getBlockPos(), ProtectionRule.FALL_DAMAGE, player);
+        RuleQuery query = RuleQuery.forPlayer(player);
+        RuleResult result = protection.test(query, ProtectionRule.FALL_DAMAGE);
         if (result == RuleResult.ALLOW) {
             ci.setReturnValue(false);
         } else if (result == RuleResult.DENY) {
@@ -51,7 +53,8 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         ProtectionManager protection = ProtectionManager.get(player.server);
 
         // TODO: this will cause incompatibility with the event
-        RuleResult result = protection.test(this.world, player.getBlockPos(), ProtectionRule.THROW_ITEMS, player);
+        RuleQuery query = RuleQuery.forPlayer(player);
+        RuleResult result = protection.test(query, ProtectionRule.THROW_ITEMS);
         if (result == RuleResult.DENY) {
             int slot = player.inventory.selectedSlot;
             ItemStack stack = player.inventory.getStack(slot);

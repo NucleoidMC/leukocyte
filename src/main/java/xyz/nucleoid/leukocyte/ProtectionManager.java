@@ -1,5 +1,6 @@
 package xyz.nucleoid.leukocyte;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
@@ -12,7 +13,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
@@ -23,8 +23,6 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.leukocyte.region.ProtectionRegion;
 import xyz.nucleoid.leukocyte.region.RegionMap;
 import xyz.nucleoid.leukocyte.region.RuleReader;
-import xyz.nucleoid.leukocyte.rule.ProtectionRule;
-import xyz.nucleoid.leukocyte.rule.RuleResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,58 +110,41 @@ public final class ProtectionManager extends PersistentState implements RuleRead
     }
 
     @Override
-    public Iterable<ProtectionRegion> sample(RegistryKey<World> dimension) {
-        return this.regionsByDimension(dimension);
+    public RuleSample sample(RuleQuery query) {
+        RegistryKey<World> dimension = query.getDimension();
+
+        if (dimension != null) {
+            return this.sampleInDimension(query, dimension);
+        } else if (query.getPos() == null) {
+            return this.sampleGlobal(query);
+        }
+
+        return query.asSample(ImmutableList.of());
     }
 
-    @Override
-    public Iterable<ProtectionRegion> sample(RegistryKey<World> dimension, BlockPos pos) {
-        List<ProtectionRegion> regions = new ArrayList<>();
-        for (ProtectionRegion region : this.regionsByDimension(dimension)) {
-            if (region.scope.contains(dimension, pos)) {
-                regions.add(region);
-            }
+    private RuleSample sampleInDimension(RuleQuery query, RegistryKey<World> dimension) {
+        RegionMap regionInDimension = this.regionsByDimension(dimension);
+        if (regionInDimension.isEmpty()) {
+            return query.asSample(ImmutableList.of());
         }
 
-        return regions;
-    }
-
-    @Override
-    public RuleResult test(RegistryKey<World> dimension, ProtectionRule rule, @Nullable ServerPlayerEntity source) {
-        if (this.doesSourceBypass(source)) {
-            return RuleResult.PASS;
-        }
-
-        for (ProtectionRegion region : this.regionsByDimension(dimension)) {
-            RuleResult result = region.rules.test(rule, source);
-            if (result != RuleResult.PASS) {
-                return result;
-            }
-        }
-
-        return RuleResult.PASS;
-    }
-
-    @Override
-    public RuleResult test(RegistryKey<World> dimension, BlockPos pos, ProtectionRule rule, @Nullable ServerPlayerEntity source) {
-        if (this.doesSourceBypass(source)) {
-            return RuleResult.PASS;
-        }
-
-        for (ProtectionRegion region : this.regionsByDimension(dimension)) {
-            if (region.scope.contains(dimension, pos)) {
-                RuleResult result = region.rules.test(rule, source);
-                if (result != RuleResult.PASS) {
-                    return result;
+        BlockPos pos = query.getPos();
+        if (pos != null) {
+            List<ProtectionRegion> regions = new ArrayList<>();
+            for (ProtectionRegion region : regionInDimension) {
+                if (region.scope.contains(dimension, pos)) {
+                    regions.add(region);
                 }
             }
+            return query.asSample(regions);
+        } else {
+            return query.asSample(regionInDimension);
         }
-
-        return RuleResult.PASS;
     }
 
-    private boolean doesSourceBypass(ServerPlayerEntity source) {
-        return source != null && source.hasPermissionLevel(4);
+    private RuleSample sampleGlobal(RuleQuery query) {
+        RegionMap regions = this.regions;
+        return query.asSample(regions);
     }
 
     @Override

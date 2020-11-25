@@ -13,7 +13,6 @@ import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
@@ -21,6 +20,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.RuleQuery;
+import xyz.nucleoid.leukocyte.RuleSample;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRegionArgument;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRuleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RuleResultArgument;
@@ -191,13 +192,12 @@ public final class ProtectCommand {
 
     private static int testRegionsHere(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        ServerWorld world = source.getWorld();
-        BlockPos pos = new BlockPos(source.getPosition());
         ServerPlayerEntity player = source.getPlayer();
 
         ProtectionManager protection = ProtectionManager.get(source.getMinecraftServer());
 
-        List<ProtectionRegion> regions = Lists.newArrayList(protection.sample(world, pos));
+        RuleSample sample = protection.sample(RuleQuery.forPlayer(player));
+        List<ProtectionRegion> regions = Lists.newArrayList(sample);
         if (regions.isEmpty()) {
             source.sendError(new LiteralText("There are no regions at your current location!"));
             return Command.SINGLE_SUCCESS;
@@ -215,8 +215,9 @@ public final class ProtectCommand {
 
         boolean empty = true;
         for (ProtectionRule rule : ProtectionRule.REGISTRY) {
+            // TODO: test for bypass
             for (ProtectionRegion region : regions) {
-                RuleResult result = region.rules.test(rule, player);
+                RuleResult result = region.rules.test(rule);
                 if (result != RuleResult.PASS) {
                     text = text.append("  ").append(new LiteralText(rule.getKey()).formatted(Formatting.AQUA))
                             .append(" = ").append(new LiteralText(result.getKey()).formatted(result.getFormatting()))

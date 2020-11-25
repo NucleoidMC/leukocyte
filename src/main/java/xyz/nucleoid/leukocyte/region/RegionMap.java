@@ -58,4 +58,8 @@ public final class RegionMap implements Iterable<ProtectionRegion> {
         }
         return false;
     }
+
+    public boolean isEmpty() {
+        return this.regions.isEmpty();
+    }
 }

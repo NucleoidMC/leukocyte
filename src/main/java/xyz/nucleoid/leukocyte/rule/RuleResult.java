@@ -41,6 +41,14 @@ public enum RuleResult {
         return this.formatting;
     }
 
+    public boolean isDefinitive() {
+        return this != PASS;
+    }
+
+    public RuleResult orElse(RuleResult other) {
+        return this.isDefinitive() ? this : other;
+    }
+
     @NotNull
     public static RuleResult byKeyOrPass(String key) {
         return BY_KEY.getOrDefault(key, RuleResult.PASS);

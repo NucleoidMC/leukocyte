@@ -25,8 +25,8 @@ public final class Leukocyte implements ModInitializer {
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> {
             if (world instanceof ServerWorld && player instanceof ServerPlayerEntity) {
                 ProtectionManager protection = ProtectionManager.get(world.getServer());
-                RuleResult result = protection.test(world, pos, ProtectionRule.BREAK, (ServerPlayerEntity) player);
-                return result != RuleResult.DENY;
+                RuleQuery query = RuleQuery.forPlayerAt((ServerPlayerEntity) player, pos);
+                return !protection.denies(query, ProtectionRule.BREAK);
             }
             return true;
         });
@@ -35,15 +35,11 @@ public final class Leukocyte implements ModInitializer {
             if (world instanceof ServerWorld && player instanceof ServerPlayerEntity) {
                 ProtectionManager protection = ProtectionManager.get(world.getServer());
                 BlockPos pos = hit.getBlockPos();
-                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 
-                // TODO: we can optimize double checks by reusing the same applicable regions
-                RuleResult result = protection.test(world, pos, ProtectionRule.INTERACT_BLOCKS, serverPlayer);
-                if (result == RuleResult.DENY) {
-                    return ActionResult.FAIL;
-                }
+                RuleQuery query = RuleQuery.forPlayerAt((ServerPlayerEntity) player, pos);
+                RuleSample sample = protection.sample(query);
 
-                result = protection.test(world, pos, ProtectionRule.INTERACT, serverPlayer);
+                RuleResult result = sample.test(ProtectionRule.INTERACT_BLOCKS).orElse(sample.test(ProtectionRule.INTERACT));
                 if (result == RuleResult.DENY) {
                     return ActionResult.FAIL;
                 }
@@ -56,8 +52,8 @@ public final class Leukocyte implements ModInitializer {
             if (world instanceof ServerWorld && player instanceof ServerPlayerEntity) {
                 ProtectionManager protection = ProtectionManager.get(world.getServer());
 
-                RuleResult result = protection.test(world, player.getBlockPos(), ProtectionRule.INTERACT, (ServerPlayerEntity) player);
-                if (result == RuleResult.DENY) {
+                RuleQuery query = RuleQuery.forPlayer((ServerPlayerEntity) player);
+                if (protection.denies(query, ProtectionRule.INTERACT)) {
                     return TypedActionResult.fail(player.getStackInHand(hand));
                 }
             }
@@ -68,15 +64,11 @@ public final class Leukocyte implements ModInitializer {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
             if (world instanceof ServerWorld && player instanceof ServerPlayerEntity) {
                 ProtectionManager protection = ProtectionManager.get(world.getServer());
-                BlockPos pos = entity.getBlockPos();
-                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 
-                RuleResult result = protection.test(world, pos, ProtectionRule.INTERACT_ENTITIES, serverPlayer);
-                if (result == RuleResult.DENY) {
-                    return ActionResult.FAIL;
-                }
+                RuleQuery query = RuleQuery.forPlayerAt((ServerPlayerEntity) player, entity.getBlockPos());
+                RuleSample sample = protection.sample(query);
 
-                result = protection.test(world, pos, ProtectionRule.INTERACT, serverPlayer);
+                RuleResult result = sample.test(ProtectionRule.INTERACT_ENTITIES).orElse(sample.test(ProtectionRule.INTERACT));
                 if (result == RuleResult.DENY) {
                     return ActionResult.FAIL;
                 }
@@ -89,8 +81,8 @@ public final class Leukocyte implements ModInitializer {
             if (world instanceof ServerWorld && player instanceof ServerPlayerEntity) {
                 ProtectionManager protection = ProtectionManager.get(world.getServer());
 
-                RuleResult result = protection.test(world, entity.getBlockPos(), ProtectionRule.ATTACK, (ServerPlayerEntity) player);
-                if (result == RuleResult.DENY) {
+                RuleQuery query = RuleQuery.forPlayerAt(((ServerPlayerEntity) player), entity.getBlockPos());
+                if (protection.denies(query, ProtectionRule.ATTACK)) {
                     return ActionResult.FAIL;
                 }
             }

@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
 
@@ -17,7 +18,8 @@ public abstract class ServerPlayerEntityMixin {
 
         ProtectionManager protection = ProtectionManager.get(self.server);
 
-        RuleResult result = protection.test(self.world, self.getBlockPos(), ProtectionRule.PVP, self);
+        RuleQuery query = RuleQuery.forPlayer(self);
+        RuleResult result = protection.test(query, ProtectionRule.PVP);
         if (result == RuleResult.ALLOW) {
             ci.setReturnValue(true);
         } else if (result == RuleResult.DENY) {

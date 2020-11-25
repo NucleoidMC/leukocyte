@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.leukocyte.ProtectionManager;
+import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
-import xyz.nucleoid.leukocyte.rule.RuleResult;
 
 @Mixin(TntBlock.class)
 public class TntBlockMixin {
@@ -19,8 +19,9 @@ public class TntBlockMixin {
     private void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean moved, CallbackInfo ci) {
         if (world instanceof ServerWorld) {
             ProtectionManager protection = ProtectionManager.get(world.getServer());
-            RuleResult result = protection.test(world, pos, ProtectionRule.UNSTABLE_TNT, null);
-            if (result == RuleResult.ALLOW) {
+
+            RuleQuery query = RuleQuery.at(world, pos);
+            if (protection.allows(query, ProtectionRule.UNSTABLE_TNT)) {
                 TntBlock.primeTnt(world, pos);
                 world.removeBlock(pos, false);
             }
