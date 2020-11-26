@@ -24,17 +24,18 @@ import net.minecraft.world.World;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.RuleQuery;
 import xyz.nucleoid.leukocyte.RuleSample;
+import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRuleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RoleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RuleResultArgument;
-import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -52,14 +53,22 @@ public final class ProtectCommand {
                 .requires(source -> source.hasPermissionLevel(4))
                 .then(literal("add")
                     .then(argument("authority", StringArgumentType.string())
-                    .executes(ProtectCommand::addUniversal)
-                        .then(argument("dimension", DimensionArgumentType.dimension())
-                            .executes(ProtectCommand::addDimension)
-                                .then(argument("min", BlockPosArgumentType.blockPos())
-                                .then(argument("max", BlockPosArgumentType.blockPos())
-                                .executes(ProtectCommand::addBox)
-                        ))
-                    )
+                    .executes(ProtectCommand::addAuthority)
+                        .then(literal("with")
+                            .then(literal("universe")
+                                .executes(ProtectCommand::addAuthorityWithUniverse)
+                            )
+                            .then(argument("dimension", DimensionArgumentType.dimension())
+                                .executes(ProtectCommand::addAuthorityWithDimension)
+                                    .then(argument("min", BlockPosArgumentType.blockPos())
+                                    .then(argument("max", BlockPosArgumentType.blockPos())
+                                    .executes(ProtectCommand::addAuthorityWithBox)
+                            )))
+                            .then(argument("min", BlockPosArgumentType.blockPos())
+                            .then(argument("max", BlockPosArgumentType.blockPos())
+                                .executes(ProtectCommand::addAuthorityWithLocalBox)
+                            ))
+                        )
                 ))
                 .then(literal("remove")
                     .then(AuthorityArgument.argument("authority")
@@ -106,47 +115,60 @@ public final class ProtectCommand {
         // @formatter:on
     }
 
-    private static int addBox(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        String key = StringArgumentType.getString(context, "authority");
+    private static int addAuthority(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return addAuthority(context, authority -> authority);
+    }
+
+    private static int addAuthorityWithUniverse(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return addAuthority(context, authority -> authority.addShape(authority.key, ProtectionShape.universe()));
+    }
+
+    private static int addAuthorityWithBox(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         RegistryKey<World> dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
         BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
         BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
-
-        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addAuthority(Authority.create(key).addShape(ProtectionShape.box(dimension, min, max)))) {
-            context.getSource().sendFeedback(new LiteralText("Added authority in " + dimension.getValue() + " " + key), true);
-        } else {
-            throw AUTHORITY_ALREADY_EXISTS.create(key);
-        }
-
-        return Command.SINGLE_SUCCESS;
+        return addAuthority(context, authority -> authority.addShape(authority.key, ProtectionShape.box(dimension, min, max)));
     }
 
-    private static int addDimension(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        String key = StringArgumentType.getString(context, "authority");
+    private static int addAuthorityWithLocalBox(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        RegistryKey<World> dimension = context.getSource().getWorld().getRegistryKey();
+        BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
+        BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
+        return addAuthority(context, authority -> authority.addShape(authority.key, ProtectionShape.box(dimension, min, max)));
+    }
+
+    private static int addAuthorityWithDimension(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         RegistryKey<World> dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
-
-        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addAuthority(Authority.create(key).addShape(ProtectionShape.dimension(dimension)))) {
-            context.getSource().sendFeedback(new LiteralText("Added authority in " + dimension.getValue() + " " + key), true);
-        } else {
-            throw AUTHORITY_ALREADY_EXISTS.create(key);
-        }
-
-        return Command.SINGLE_SUCCESS;
+        return addAuthority(context, authority -> authority.addShape(authority.key, ProtectionShape.dimension(dimension)));
     }
 
-    private static int addUniversal(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int addAuthority(CommandContext<ServerCommandSource> context, UnaryOperator<Authority> operator) throws CommandSyntaxException {
         String key = StringArgumentType.getString(context, "authority");
 
-        Leukocyte leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
-        if (leukocyte.addAuthority(Authority.create(key).addShape(ProtectionShape.global()))) {
-            context.getSource().sendFeedback(new LiteralText("Added universal authority " + key), true);
+        ServerCommandSource source = context.getSource();
+        Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
+        Authority authority = operator.apply(Authority.create(key));
+
+        if (leukocyte.addAuthority(authority)) {
+            if (authority.shapes.isEmpty()) {
+                source.sendFeedback(new LiteralText("Added empty authority as '" + key + "'"), true);
+            } else {
+                source.sendFeedback(new LiteralText("Added authority as '" + key + "' with ").append(authority.shapes.displayShort()), true);
+            }
+
+            source.sendFeedback(
+                    new LiteralText("Run ")
+                            .append(new LiteralText("/protect shape start").formatted(Formatting.GRAY))
+                            .append(" to include additional shapes in this authority, and ")
+                            .append(new LiteralText("/protect set rule " + key + " <rule> <allow|deny>").formatted(Formatting.GRAY))
+                            .append(" to set the rules on this authority"),
+                    false
+            );
+
+            return Command.SINGLE_SUCCESS;
         } else {
             throw AUTHORITY_ALREADY_EXISTS.create(key);
         }
-
-        return Command.SINGLE_SUCCESS;
     }
 
     private static int remove(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -259,7 +281,7 @@ public final class ProtectCommand {
         MutableText text = new LiteralText("Listing " + authorities.size() + " registered authorities:\n");
         for (Authority authority : authorities) {
             text = text.append("  ").append(new LiteralText(authority.key).formatted(Formatting.AQUA)).append("@" + authority.level + ": ")
-                    .append(authority.shapes.display())
+                    .append(authority.shapes.displayShort())
                     .append("\n");
         }
 
@@ -317,13 +339,15 @@ public final class ProtectCommand {
     private static int displayAuthority(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Authority authority = AuthorityArgument.get(context, "authority");
 
-        context.getSource().sendFeedback(
-                new LiteralText("Information for '" + authority.key + "':\n")
-                        .append(" Level: ").append(new LiteralText(String.valueOf(authority.level)).formatted(Formatting.AQUA)).append("\n")
-                        .append(" Scope: ").append(authority.shapes.display()).append("\n")
-                        .append(" Rules:\n").append(authority.rules.display()),
-                false
-        );
+        MutableText text = new LiteralText("Information for '" + authority.key + "':\n");
+        text = text.append(" Level: ").append(new LiteralText(String.valueOf(authority.level)).formatted(Formatting.AQUA)).append("\n");
+        text = text.append(" Shapes:\n").append(authority.shapes.displayList());
+
+        if (!authority.rules.isEmpty()) {
+            text.append(" Rules:\n").append(authority.rules.display());
+        }
+
+        context.getSource().sendFeedback(text, false);
 
         return Command.SINGLE_SUCCESS;
     }

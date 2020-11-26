@@ -5,7 +5,6 @@ import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -32,11 +31,6 @@ public final class Leukocyte extends PersistentState implements RuleReader {
     private final AuthorityMap authorities = new AuthorityMap();
     private final Reference2ObjectMap<RegistryKey<World>, AuthorityMap> authoritiesByDimension = new Reference2ObjectOpenHashMap<>();
 
-    static {
-        ServerWorldEvents.LOAD.register((server, world) -> Leukocyte.get(server).onWorldLoad(world));
-        ServerWorldEvents.UNLOAD.register((server, world) -> Leukocyte.get(server).onWorldUnload(world));
-    }
-
     private Leukocyte() {
         super(ID);
     }
@@ -56,7 +50,7 @@ public final class Leukocyte extends PersistentState implements RuleReader {
         return world instanceof ServerWorld ? get(world.getServer()) : null;
     }
 
-    private void onWorldLoad(ServerWorld world) {
+    void onWorldLoad(ServerWorld world) {
         RegistryKey<World> dimension = world.getRegistryKey();
 
         AuthorityMap map = new AuthorityMap();
@@ -69,7 +63,7 @@ public final class Leukocyte extends PersistentState implements RuleReader {
         this.authoritiesByDimension.put(dimension, map);
     }
 
-    private void onWorldUnload(ServerWorld world) {
+    void onWorldUnload(ServerWorld world) {
         this.authoritiesByDimension.remove(world.getRegistryKey());
     }
 
@@ -102,8 +96,10 @@ public final class Leukocyte extends PersistentState implements RuleReader {
 
     public void replaceAuthority(Authority from, Authority to) {
         if (this.authorities.replace(from, to)) {
-            for (AuthorityMap authorities : this.authoritiesByDimension.values()) {
-                authorities.replace(from, to);
+            for (AuthorityMap dimension : this.authoritiesByDimension.values()) {
+                if (!dimension.replace(from, to)) {
+                    dimension.add(to);
+                }
             }
         }
     }

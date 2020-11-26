@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.mixin;
+package xyz.nucleoid.leukocyte.mixin.rule;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;

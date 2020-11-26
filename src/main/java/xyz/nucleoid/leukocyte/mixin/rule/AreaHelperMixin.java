@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.mixin;
+package xyz.nucleoid.leukocyte.mixin.rule;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;

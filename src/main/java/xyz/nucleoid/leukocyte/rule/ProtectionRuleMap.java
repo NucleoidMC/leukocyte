@@ -54,4 +54,8 @@ public final class ProtectionRuleMap {
 
         return text;
     }
+
+    public boolean isEmpty() {
+        return this.map.isEmpty();
+    }
 }

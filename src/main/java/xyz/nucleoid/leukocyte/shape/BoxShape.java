@@ -58,6 +58,11 @@ public final class BoxShape implements ProtectionShape {
                 .formatted(Formatting.GRAY);
     }
 
+    @Override
+    public MutableText displayShort() {
+        return this.display();
+    }
+
     private MutableText displayPos(BlockPos pos) {
         return new LiteralText("(" + pos.getX() + "; " + pos.getY() + "; " + pos.getZ() + ")");
     }

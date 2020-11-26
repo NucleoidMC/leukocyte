@@ -4,14 +4,15 @@
   "package": "xyz.nucleoid.leukocyte.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "AreaHelperMixin",
-    "CraftingResultInventoryMixin",
-    "HungerManagerMixin",
-    "PlayerEntityMixin",
-    "ScreenHandlerMixin",
-    "ServerPlayerEntityMixin",
-    "ServerPlayerInteractionManagerMixin",
-    "TntBlockMixin"
+    "rule.AreaHelperMixin",
+    "rule.CraftingResultInventoryMixin",
+    "rule.HungerManagerMixin",
+    "rule.PlayerEntityMixin",
+    "rule.ScreenHandlerMixin",
+    "rule.ServerPlayerEntityMixin",
+    "rule.ServerPlayerInteractionManagerMixin",
+    "rule.TntBlockMixin",
+    "shape.ServerPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

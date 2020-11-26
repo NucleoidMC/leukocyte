@@ -33,6 +33,11 @@ public final class UniversalShape implements ProtectionShape {
 
     @Override
     public MutableText display() {
-        return new LiteralText("Universal").formatted(Formatting.YELLOW);
+        return new LiteralText("Universe").formatted(Formatting.YELLOW);
+    }
+
+    @Override
+    public MutableText displayShort() {
+        return this.display();
     }
 }

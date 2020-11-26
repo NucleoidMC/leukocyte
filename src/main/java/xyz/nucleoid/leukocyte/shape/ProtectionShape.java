@@ -17,7 +17,7 @@ public interface ProtectionShape {
         REGISTRY.register(identifier, codec);
     }
 
-    static ProtectionShape global() {
+    static ProtectionShape universe() {
         return UniversalShape.INSTANCE;
     }
 
@@ -51,6 +51,8 @@ public interface ProtectionShape {
     Codec<? extends ProtectionShape> getCodec();
 
     MutableText display();
+
+    MutableText displayShort();
 
     default ProtectionShape union(ProtectionShape other) {
         return union(this, other);

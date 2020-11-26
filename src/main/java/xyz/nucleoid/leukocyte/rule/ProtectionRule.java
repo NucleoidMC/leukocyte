@@ -41,6 +41,11 @@ public final class ProtectionRule {
     }
 
     @Override
+    public String toString() {
+        return this.key;
+    }
+
+    @Override
     public int hashCode() {
         return this.key.hashCode();
     }

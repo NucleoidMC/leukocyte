@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.mixin;
+package xyz.nucleoid.leukocyte.mixin.rule;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;

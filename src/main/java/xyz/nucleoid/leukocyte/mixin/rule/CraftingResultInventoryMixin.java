@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.mixin;
+package xyz.nucleoid.leukocyte.mixin.rule;
 
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.recipe.Recipe;

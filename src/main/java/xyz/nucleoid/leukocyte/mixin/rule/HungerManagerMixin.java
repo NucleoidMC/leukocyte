@@ -1,4 +1,4 @@
-package xyz.nucleoid.leukocyte.mixin;
+package xyz.nucleoid.leukocyte.mixin.rule;
 
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;

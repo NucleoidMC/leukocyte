@@ -43,4 +43,9 @@ public final class DimensionShape implements ProtectionShape {
     public MutableText display() {
         return new LiteralText(this.dimension.getValue().toString()).formatted(Formatting.YELLOW);
     }
+
+    @Override
+    public MutableText displayShort() {
+        return this.display();
+    }
 }

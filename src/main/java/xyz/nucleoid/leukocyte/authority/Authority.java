@@ -8,8 +8,6 @@ import xyz.nucleoid.leukocyte.rule.ProtectionRuleMap;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 
 // TODO: support specific exclusions of a list of players by API?
-// TODO: compose a region out of multiple shapes? build a shape -> add to authority with a name
-// TODO: temporary, non-keyed authorities that delete on world unload
 public final class Authority implements Comparable<Authority> {
     public static final Codec<Authority> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
@@ -59,13 +57,31 @@ public final class Authority implements Comparable<Authority> {
         return new Authority(this.key, level, this.shapes, this.rules.copy(), this.exclusions.copy(), this.isTransient);
     }
 
-    public Authority addShape(ProtectionShape shape) {
-        AuthorityShapes newShapes = this.shapes.withShape(shape);
+    public Authority addShape(String name, ProtectionShape shape) {
+        AuthorityShapes newShapes = this.shapes.withShape(name, shape);
+        return new Authority(this.key, this.level, newShapes, this.rules.copy(), this.exclusions.copy(), this.isTransient);
+    }
+
+    public Authority removeShape(String name) {
+        AuthorityShapes newShapes = this.shapes.removeShape(name);
+        if (this.shapes == newShapes) {
+            return this;
+        }
         return new Authority(this.key, this.level, newShapes, this.rules.copy(), this.exclusions.copy(), this.isTransient);
     }
 
     @Override
     public int compareTo(Authority other) {
-        return Integer.compare(other.level, this.level);
+        int levelCompare = Integer.compare(other.level, this.level);
+        if (levelCompare != 0) {
+            return levelCompare;
+        } else {
+            return this.key.compareTo(other.key);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.key.hashCode();
     }
 }

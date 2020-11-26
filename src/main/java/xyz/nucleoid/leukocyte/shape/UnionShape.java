@@ -53,14 +53,30 @@ public final class UnionShape implements ProtectionShape {
 
     @Override
     public MutableText display() {
+        if (this.scopes.length == 1) {
+            return this.scopes[0].display();
+        } else if (this.scopes.length == 0) {
+            return new LiteralText("()");
+        }
+
         MutableText text = new LiteralText("(");
         for (int i = 0; i < this.scopes.length; i++) {
             text = text.append(this.scopes[i].display());
-            if (i <= this.scopes.length - 1) {
+            if (i < this.scopes.length - 1) {
                 text = text.append("U");
             }
         }
         return text.append(")");
+    }
+
+    @Override
+    public MutableText displayShort() {
+        if (this.scopes.length == 1) {
+            return this.scopes[0].display();
+        } else if (this.scopes.length == 0) {
+            return new LiteralText("()");
+        }
+        return new LiteralText(this.scopes.length + " combined shapes");
     }
 
     @Override
