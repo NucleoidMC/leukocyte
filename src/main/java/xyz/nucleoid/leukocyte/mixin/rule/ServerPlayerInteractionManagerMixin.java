@@ -44,7 +44,7 @@ public class ServerPlayerInteractionManagerMixin {
         }
     }
 
-    @Inject(method = "interactBlock", at = @At(value = "NEW", target = "net/minecraft/item/ItemUsageContext"))
+    @Inject(method = "interactBlock", at = @At(value = "NEW", target = "net/minecraft/item/ItemUsageContext"), cancellable = true)
     private void onUseItemOnBlock(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> ci) {
         if (this.player.world.isClient) {
             return;
