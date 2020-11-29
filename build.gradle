@@ -23,7 +23,7 @@ dependencies {
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-  modImplementation "dev.gegy:player-roles:1.2.0"
+  modCompileOnly "dev.gegy:player-roles:1.2.0"
 
   modRuntime("com.github.SuperCoder7979:databreaker:0.2.6") {
     exclude module: "fabric-loader"

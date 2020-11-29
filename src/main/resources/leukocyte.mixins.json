@@ -6,6 +6,7 @@
   "mixins": [
     "rule.AreaHelperMixin",
     "rule.CraftingResultInventoryMixin",
+    "rule.FarmlandBlockMixin",
     "rule.HungerManagerMixin",
     "rule.PlayerEntityMixin",
     "rule.ScreenHandlerMixin",
