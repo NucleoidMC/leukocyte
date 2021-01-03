@@ -13,7 +13,8 @@
     "rule.ServerPlayerEntityMixin",
     "rule.ServerPlayerInteractionManagerMixin",
     "rule.TntBlockMixin",
-    "shape.ServerPlayerEntityMixin"
+    "shape.ServerPlayerEntityMixin",
+    "rule.WitherSkullBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1
