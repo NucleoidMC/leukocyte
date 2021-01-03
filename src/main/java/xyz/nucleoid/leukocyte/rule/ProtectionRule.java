@@ -29,6 +29,8 @@ public final class ProtectionRule {
     public static final ProtectionRule THROW_ITEMS = register("throw_items");
 
     public static final ProtectionRule UNSTABLE_TNT = register("unstable_tnt");
+    public static final ProtectionRule IGNITE_TNT = register("ignite_tnt");
+    public static final ProtectionRule SPAWN_WITHER = register("spawn_wither");
 
     private final String key;
 

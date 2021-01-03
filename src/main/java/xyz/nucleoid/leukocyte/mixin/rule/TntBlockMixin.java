@@ -2,6 +2,7 @@ package xyz.nucleoid.leukocyte.mixin.rule;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.TntBlock;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,6 +23,17 @@ public class TntBlockMixin {
             if (leukocyte.allows(query, ProtectionRule.UNSTABLE_TNT)) {
                 TntBlock.primeTnt(world, pos);
                 world.removeBlock(pos, false);
+            }
+        }
+    }
+
+    @Inject(method = "primeTnt(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/LivingEntity;)V", at = @At("HEAD"), cancellable = true)
+    private static void primeTnt(World world, BlockPos pos, LivingEntity igniter, CallbackInfo ci) {
+        Leukocyte leukocyte = Leukocyte.byWorld(world);
+        if (leukocyte != null) {
+            RuleQuery query = RuleQuery.at(world, pos);
+            if (leukocyte.denies(query, ProtectionRule.IGNITE_TNT)) {
+                ci.cancel();
             }
         }
     }
