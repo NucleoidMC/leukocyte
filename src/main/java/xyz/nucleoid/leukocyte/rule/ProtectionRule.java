@@ -31,6 +31,7 @@ public final class ProtectionRule {
     public static final ProtectionRule UNSTABLE_TNT = register("unstable_tnt");
     public static final ProtectionRule IGNITE_TNT = register("ignite_tnt");
     public static final ProtectionRule SPAWN_WITHER = register("spawn_wither");
+    public static final ProtectionRule FIRE_TICK = register("fire_tick");
 
     private final String key;
 
