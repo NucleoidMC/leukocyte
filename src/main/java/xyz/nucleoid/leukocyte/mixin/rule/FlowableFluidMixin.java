@@ -20,7 +20,7 @@ import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 @Mixin(FlowableFluid.class)
 public class FlowableFluidMixin {
     @Inject(method = "canFlow", at = @At("RETURN"), cancellable = true)
-    public void applyFluidFlowGameRule(BlockView blockView, BlockPos fluidPos, BlockState fluidBlockState, Direction flowDirection, BlockPos flowTo, BlockState flowToBlockState, FluidState fluidState, Fluid fluid, CallbackInfoReturnable<Boolean> ci) {
+    private void applyFluidFlowGameRule(BlockView blockView, BlockPos fluidPos, BlockState fluidBlockState, Direction flowDirection, BlockPos flowTo, BlockState flowToBlockState, FluidState fluidState, Fluid fluid, CallbackInfoReturnable<Boolean> ci) {
         if (!(blockView instanceof World)) return;
         World world = (World) blockView;
 
