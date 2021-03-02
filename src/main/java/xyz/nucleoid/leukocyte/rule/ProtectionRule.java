@@ -33,6 +33,9 @@ public final class ProtectionRule {
     public static final ProtectionRule SPAWN_WITHER = register("spawn_wither");
     public static final ProtectionRule FIRE_TICK = register("fire_tick");
 
+    public static final ProtectionRule FIRE_TICK = register("fire_tick");
+    public static final ProtectionRule FLUID_FLOW = register("fluid_flow");
+
     private final String key;
 
     ProtectionRule(String key) {

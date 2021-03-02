@@ -7,6 +7,7 @@
     "rule.AreaHelperMixin",
     "rule.CraftingResultInventoryMixin",
     "rule.FarmlandBlockMixin",
+    "rule.FlowableFluidMixin",
     "rule.HungerManagerMixin",
     "rule.PlayerEntityMixin",
     "rule.ScreenHandlerMixin",
