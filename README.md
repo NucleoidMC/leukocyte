@@ -28,6 +28,11 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `fall_damage` controls whether players should receive fall damage
  - `hunger` controls whether players will become hungry
  - `throw_items` controls whether players can throw items from their inventory
+ - `unstable_tnt` controls tnt automatically igniting when placed
+ - `ignite_tnt` controls whether tnt can be ignited
+ - `spawn_withers` controls whether withers can be summoned
+ - `fire_tick` controls whether fire tick is enabled within the authority. Defaults to gamerule if not set
+ - `fluid_flow` controls whether fluids flow
  
 To set a rule as `allow` or `deny` on an authority, use `/protect set rule <authority> <rule> <result>`.  
 
