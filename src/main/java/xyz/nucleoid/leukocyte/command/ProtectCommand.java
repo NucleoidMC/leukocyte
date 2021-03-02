@@ -352,7 +352,7 @@ public final class ProtectCommand {
         text = text.append(" Shapes:\n").append(authority.shapes.displayList());
 
         if (!authority.rules.isEmpty()) {
-            text.append(" Rules:\n").append(authority.rules.display());
+            text.append(" Rules:\n").append(authority.rules.clickableDisplay(authority));
         }
 
         context.getSource().sendFeedback(text, false);

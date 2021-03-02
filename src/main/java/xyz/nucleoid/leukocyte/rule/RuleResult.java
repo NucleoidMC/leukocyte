@@ -2,7 +2,13 @@ package xyz.nucleoid.leukocyte.rule;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import xyz.nucleoid.leukocyte.authority.Authority;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +45,30 @@ public enum RuleResult {
 
     public Formatting getFormatting() {
         return this.formatting;
+    }
+
+    public MutableText display() {
+        return new LiteralText(this.key).formatted(this.formatting);
+    }
+
+    public MutableText clickableDisplay(Authority authority, ProtectionRule rule) {
+        if (!this.isDefinitive()) {
+            return this.display();
+        }
+
+        String command = "/protect set rule " + authority.key + " " + rule.getKey() + " " + this.getOpposite().key;
+        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command);
+
+        return this.display().styled(style -> style.withClickEvent(clickEvent));
+    }
+
+    public RuleResult getOpposite() {
+        switch (this) {
+            case ALLOW: return RuleResult.DENY;
+            case DENY: return RuleResult.ALLOW;
+            case PASS:
+            default: return null;
+        }
     }
 
     public boolean isDefinitive() {
