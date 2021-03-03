@@ -33,6 +33,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `spawn_withers` controls whether withers can be summoned
  - `fire_tick` controls whether fire tick is enabled within the authority. Defaults to gamerule if not set
  - `fluid_flow` controls whether fluids flow
+ - `ice_melt` controls whether ice and frosted ice melt
  
 To set a rule as `allow` or `deny` on an authority, use `/protect set rule <authority> <rule> <result>`.  
 
