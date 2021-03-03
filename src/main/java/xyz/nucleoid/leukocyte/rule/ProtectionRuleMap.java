@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
+import xyz.nucleoid.leukocyte.authority.Authority;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -48,7 +50,22 @@ public final class ProtectionRuleMap {
             RuleResult result = entry.getValue();
 
             text = text.append("  ").append(new LiteralText(rule.getKey()).formatted(Formatting.GRAY))
-                    .append(" = ").append(new LiteralText(result.getKey()).formatted(result.getFormatting()))
+                    .append(" = ").append(result.display())
+                    .append("\n");
+        }
+
+        return text;
+    }
+
+    public MutableText clickableDisplay(Authority authority) {
+        MutableText text = new LiteralText("");
+
+        for (Map.Entry<ProtectionRule, RuleResult> entry : this.map.entrySet()) {
+            ProtectionRule rule = entry.getKey();
+            RuleResult result = entry.getValue();
+
+            text = text.append("  ").append(new LiteralText(rule.getKey()).formatted(Formatting.GRAY))
+                    .append(" = ").append(result.clickableDisplay(authority, rule))
                     .append("\n");
         }
 
