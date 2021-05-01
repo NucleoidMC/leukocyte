@@ -11,6 +11,7 @@
     "rule.FrostedIceBlockMixin",
     "rule.HungerManagerMixin",
     "rule.IceBlockMixin",
+    "rule.ItemEntityMixin",
     "rule.PlayerEntityMixin",
     "rule.ScreenHandlerMixin",
     "rule.ServerPlayerEntityMixin",

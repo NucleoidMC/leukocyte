@@ -26,7 +26,9 @@ public final class ProtectionRule {
     public static final ProtectionRule CRAFTING = register("crafting");
     public static final ProtectionRule HUNGER = register("hunger");
     public static final ProtectionRule FALL_DAMAGE = register("fall_damage");
+
     public static final ProtectionRule THROW_ITEMS = register("throw_items");
+    public static final ProtectionRule PICKUP_ITEMS = register("pickup_items");
 
     public static final ProtectionRule UNSTABLE_TNT = register("unstable_tnt");
     public static final ProtectionRule IGNITE_TNT = register("ignite_tnt");
