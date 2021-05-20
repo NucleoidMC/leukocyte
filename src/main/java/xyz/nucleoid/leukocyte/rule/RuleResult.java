@@ -5,12 +5,11 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import xyz.nucleoid.leukocyte.authority.Authority;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.leukocyte.authority.Authority;
 
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +55,7 @@ public enum RuleResult {
             return this.display();
         }
 
-        String command = "/protect set rule " + authority.key + " " + rule.getKey() + " " + this.getOpposite().key;
+        String command = "/protect set rule " + authority.getKey() + " " + rule.getKey() + " " + this.getOpposite().key;
         ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command);
 
         return this.display().styled(style -> style.withClickEvent(clickEvent));
@@ -66,7 +65,6 @@ public enum RuleResult {
         switch (this) {
             case ALLOW: return RuleResult.DENY;
             case DENY: return RuleResult.ALLOW;
-            case PASS:
             default: return null;
         }
     }
@@ -77,6 +75,14 @@ public enum RuleResult {
 
     public RuleResult orElse(RuleResult other) {
         return this.isDefinitive() ? this : other;
+    }
+
+    public ActionResult asActionResult() {
+        switch (this) {
+            case ALLOW: return ActionResult.SUCCESS;
+            case DENY: return ActionResult.FAIL;
+            default: return ActionResult.PASS;
+        }
     }
 
     @NotNull

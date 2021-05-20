@@ -3,9 +3,7 @@ package xyz.nucleoid.leukocyte.shape;
 import com.mojang.serialization.Codec;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
+import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,9 +15,17 @@ public final class UnionShape implements ProtectionShape {
     );
 
     private final ProtectionShape[] scopes;
+    private final EventFilter filter;
 
     public UnionShape(ProtectionShape... scopes) {
         this.scopes = scopes;
+
+        EventFilter[] filters = new EventFilter[scopes.length];
+        for (int i = 0; i < scopes.length; i++) {
+            filters[i] = scopes[i].asEventFilter();
+        }
+
+        this.filter = EventFilter.anyOf(filters);
     }
 
     private UnionShape(List<ProtectionShape> scopes) {
@@ -27,23 +33,8 @@ public final class UnionShape implements ProtectionShape {
     }
 
     @Override
-    public boolean intersects(RegistryKey<World> dimension) {
-        for (ProtectionShape scope : this.scopes) {
-            if (scope.intersects(dimension)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean contains(RegistryKey<World> dimension, BlockPos pos) {
-        for (ProtectionShape scope : this.scopes) {
-            if (scope.contains(dimension, pos)) {
-                return true;
-            }
-        }
-        return false;
+    public EventFilter asEventFilter() {
+        return this.filter;
     }
 
     @Override

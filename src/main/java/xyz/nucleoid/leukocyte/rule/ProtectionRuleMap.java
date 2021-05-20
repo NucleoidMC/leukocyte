@@ -5,9 +5,8 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
-import xyz.nucleoid.leukocyte.authority.Authority;
-
 import org.jetbrains.annotations.NotNull;
+import xyz.nucleoid.leukocyte.authority.Authority;
 
 import java.util.Map;
 
@@ -21,14 +20,32 @@ public final class ProtectionRuleMap {
             rules -> rules.map
     );
 
-    private final Map<ProtectionRule, RuleResult> map = new Reference2ObjectOpenHashMap<>();
+    private final Map<ProtectionRule, RuleResult> map;
 
-    public void put(ProtectionRule rule, RuleResult result) {
+    public ProtectionRuleMap() {
+        this.map = new Reference2ObjectOpenHashMap<>();
+    }
+
+    ProtectionRuleMap(ProtectionRuleMap map) {
+        this.map = new Reference2ObjectOpenHashMap<>(map.map);
+    }
+
+    private void put(ProtectionRule rule, RuleResult result) {
         if (result != RuleResult.PASS) {
             this.map.put(rule, result);
         } else {
             this.map.remove(rule);
         }
+    }
+
+    public ProtectionRuleMap with(ProtectionRule rule, RuleResult result) {
+        if (this.test(rule) == result) {
+            return this;
+        }
+
+        ProtectionRuleMap map = this.copy();
+        map.put(rule, result);
+        return map;
     }
 
     @NotNull
@@ -37,24 +54,7 @@ public final class ProtectionRuleMap {
     }
 
     public ProtectionRuleMap copy() {
-        ProtectionRuleMap rules = new ProtectionRuleMap();
-        rules.map.putAll(this.map);
-        return rules;
-    }
-
-    public MutableText display() {
-        MutableText text = new LiteralText("");
-
-        for (Map.Entry<ProtectionRule, RuleResult> entry : this.map.entrySet()) {
-            ProtectionRule rule = entry.getKey();
-            RuleResult result = entry.getValue();
-
-            text = text.append("  ").append(new LiteralText(rule.getKey()).formatted(Formatting.GRAY))
-                    .append(" = ").append(result.display())
-                    .append("\n");
-        }
-
-        return text;
+        return new ProtectionRuleMap(this);
     }
 
     public MutableText clickableDisplay(Authority authority) {

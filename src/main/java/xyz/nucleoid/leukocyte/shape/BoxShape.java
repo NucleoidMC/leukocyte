@@ -10,6 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import xyz.nucleoid.stimuli.filter.EventFilter;
 
 public final class BoxShape implements ProtectionShape {
     public static final Codec<BoxShape> CODEC = RecordCodecBuilder.create(instance -> {
@@ -24,22 +25,19 @@ public final class BoxShape implements ProtectionShape {
     private final BlockPos min;
     private final BlockPos max;
 
+    private final EventFilter eventFilter;
+
     public BoxShape(RegistryKey<World> dimension, BlockPos min, BlockPos max) {
         this.dimension = dimension;
         this.min = min;
         this.max = max;
+
+        this.eventFilter = EventFilter.box(dimension, min, max);
     }
 
     @Override
-    public boolean intersects(RegistryKey<World> dimension) {
-        return this.dimension == dimension;
-    }
-
-    @Override
-    public boolean contains(RegistryKey<World> dimension, BlockPos pos) {
-        return this.dimension == dimension
-                && pos.getX() >= this.min.getX() && pos.getY() >= this.min.getY() && pos.getZ() >= this.min.getZ()
-                && pos.getX() <= this.max.getX() && pos.getY() <= this.max.getY() && pos.getZ() <= this.max.getZ();
+    public EventFilter asEventFilter() {
+        return this.eventFilter;
     }
 
     @Override

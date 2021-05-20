@@ -5,12 +5,13 @@ import net.minecraft.text.MutableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-import xyz.nucleoid.leukocyte.util.TinyRegistry;
+import xyz.nucleoid.leukocyte.util.StringRegistry;
+import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.function.Function;
 
 public interface ProtectionShape {
-    TinyRegistry<Codec<? extends ProtectionShape>> REGISTRY = TinyRegistry.newStable();
+    StringRegistry<Codec<? extends ProtectionShape>> REGISTRY = new StringRegistry<>();
     Codec<ProtectionShape> CODEC = REGISTRY.dispatchStable(ProtectionShape::getCodec, Function.identity());
 
     static <T extends ProtectionShape> void register(String identifier, Codec<T> codec) {
@@ -44,9 +45,7 @@ public interface ProtectionShape {
         return new UnionShape(scopes);
     }
 
-    boolean intersects(RegistryKey<World> dimension);
-
-    boolean contains(RegistryKey<World> dimension, BlockPos pos);
+    EventFilter asEventFilter();
 
     Codec<? extends ProtectionShape> getCodec();
 

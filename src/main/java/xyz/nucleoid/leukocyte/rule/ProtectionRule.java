@@ -2,12 +2,12 @@ package xyz.nucleoid.leukocyte.rule;
 
 import com.mojang.serialization.Codec;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.leukocyte.util.TinyRegistry;
+import xyz.nucleoid.leukocyte.util.StringRegistry;
 
 import java.util.Set;
 
 public final class ProtectionRule {
-    public static final TinyRegistry<ProtectionRule> REGISTRY = TinyRegistry.newStable();
+    public static final StringRegistry<ProtectionRule> REGISTRY = new StringRegistry<>();
 
     public static final Codec<ProtectionRule> CODEC = REGISTRY;
 
@@ -17,6 +17,7 @@ public final class ProtectionRule {
 
     public static final ProtectionRule INTERACT_BLOCKS = register("interact_blocks");
     public static final ProtectionRule INTERACT_ENTITIES = register("interact_entities");
+    public static final ProtectionRule INTERACT_ITEMS = register("interact_items");
     public static final ProtectionRule INTERACT = register("interact");
 
     public static final ProtectionRule ATTACK = register("attack");

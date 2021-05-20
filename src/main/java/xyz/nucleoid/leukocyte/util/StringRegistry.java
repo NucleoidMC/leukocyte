@@ -6,25 +6,14 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.Lifecycle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.Set;
 
-public final class TinyRegistry<T> implements Codec<T>, Iterable<T> {
-    private final Lifecycle lifecycle;
-
+public final class StringRegistry<T> implements Codec<T>, Iterable<T> {
     private final BiMap<String, T> map = HashBiMap.create();
-
-    public TinyRegistry(Lifecycle lifecycle) {
-        this.lifecycle = lifecycle;
-    }
-
-    public static <T> TinyRegistry<T> newStable() {
-        return new TinyRegistry<>(Lifecycle.stable());
-    }
 
     public void register(String identifier, T value) {
         this.map.put(identifier, value);
@@ -46,12 +35,12 @@ public final class TinyRegistry<T> implements Codec<T>, Iterable<T> {
 
     @Override
     public <U> DataResult<Pair<T, U>> decode(DynamicOps<U> ops, U input) {
-        return Codec.STRING.decode(ops, input).addLifecycle(this.lifecycle)
+        return Codec.STRING.decode(ops, input)
                 .flatMap(pair -> {
                     if (!this.containsKey(pair.getFirst())) {
                         return DataResult.error("Unknown registry key: " + pair.getFirst());
                     }
-                    return DataResult.success(pair.mapFirst(this::get), this.lifecycle);
+                    return DataResult.success(pair.mapFirst(this::get));
                 });
     }
 
@@ -61,7 +50,7 @@ public final class TinyRegistry<T> implements Codec<T>, Iterable<T> {
         if (identifier == null) {
             return DataResult.error("Unknown registry element " + input);
         }
-        return ops.mergeToPrimitive(prefix, ops.createString(identifier)).setLifecycle(this.lifecycle);
+        return ops.mergeToPrimitive(prefix, ops.createString(identifier));
     }
 
     public Set<String> keySet() {

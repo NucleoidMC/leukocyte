@@ -2,10 +2,14 @@ package xyz.nucleoid.leukocyte.authority;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import org.apache.commons.lang3.RandomStringUtils;
+import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.rule.ProtectionExclusions;
+import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.ProtectionRuleMap;
+import xyz.nucleoid.leukocyte.rule.RuleResult;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
+import xyz.nucleoid.stimuli.event.EventListenerMap;
+import xyz.nucleoid.stimuli.filter.EventFilter;
 
 // TODO: support specific exclusions of a list of players by API?
 public final class Authority implements Comparable<Authority> {
@@ -19,47 +23,46 @@ public final class Authority implements Comparable<Authority> {
         ).apply(instance, Authority::new);
     });
 
-    public final String key;
-    public final int level;
-    public final AuthorityShapes shapes;
-    public final ProtectionRuleMap rules;
-    public final ProtectionExclusions exclusions;
+    private final String key;
+    private final int level;
+    private final AuthorityShapes shapes;
+    private final ProtectionRuleMap rules;
+    private final ProtectionExclusions exclusions;
 
-    public final boolean isTransient;
+    private final EventListenerMap eventListeners;
 
-    Authority(String key, int level, AuthorityShapes shapes, ProtectionRuleMap rules, ProtectionExclusions exclusions, boolean isTransient) {
+    private final EventFilter eventFilter;
+
+    Authority(String key, int level, AuthorityShapes shapes, ProtectionRuleMap rules, ProtectionExclusions exclusions) {
         this.key = key;
         this.level = level;
         this.shapes = shapes;
         this.rules = rules;
         this.exclusions = exclusions;
-        this.isTransient = isTransient;
+
+        this.eventListeners = Leukocyte.createEventListenersFor(rules);
+        this.eventFilter = exclusions.applyToFilter(shapes.asEventFilter());
     }
 
-    Authority(String key, int level, AuthorityShapes shapes, ProtectionRuleMap rules, ProtectionExclusions exclusions) {
-        this(key, level, shapes, rules, exclusions, false);
-    }
-
-    Authority(String key, int level, AuthorityShapes shapes, boolean isTransient) {
-        this(key, level, shapes, new ProtectionRuleMap(), new ProtectionExclusions(), isTransient);
+    Authority(String key, int level, AuthorityShapes shapes) {
+        this(key, level, shapes, new ProtectionRuleMap(), new ProtectionExclusions());
     }
 
     public static Authority create(String key) {
-        return new Authority(key, 0, new AuthorityShapes(), false);
-    }
-
-    public static Authority createTransient() {
-        String key = RandomStringUtils.randomAlphanumeric(16);
-        return new Authority(key, 0, new AuthorityShapes(), true);
+        return new Authority(key, 0, new AuthorityShapes());
     }
 
     public Authority withLevel(int level) {
-        return new Authority(this.key, level, this.shapes, this.rules.copy(), this.exclusions.copy(), this.isTransient);
+        return new Authority(this.key, level, this.shapes, this.rules, this.exclusions.copy());
+    }
+
+    public Authority withRule(ProtectionRule rule, RuleResult result) {
+        return new Authority(this.key, this.level, this.shapes, this.rules.with(rule, result), this.exclusions.copy());
     }
 
     public Authority addShape(String name, ProtectionShape shape) {
         AuthorityShapes newShapes = this.shapes.withShape(name, shape);
-        return new Authority(this.key, this.level, newShapes, this.rules.copy(), this.exclusions.copy(), this.isTransient);
+        return new Authority(this.key, this.level, newShapes, this.rules, this.exclusions.copy());
     }
 
     public Authority removeShape(String name) {
@@ -67,7 +70,35 @@ public final class Authority implements Comparable<Authority> {
         if (this.shapes == newShapes) {
             return this;
         }
-        return new Authority(this.key, this.level, newShapes, this.rules.copy(), this.exclusions.copy(), this.isTransient);
+        return new Authority(this.key, this.level, newShapes, this.rules, this.exclusions.copy());
+    }
+
+    public String getKey() {
+        return this.key;
+    }
+
+    public int getLevel() {
+        return this.level;
+    }
+
+    public AuthorityShapes getShapes() {
+        return this.shapes;
+    }
+
+    public ProtectionRuleMap getRules() {
+        return this.rules;
+    }
+
+    public ProtectionExclusions getExclusions() {
+        return this.exclusions;
+    }
+
+    public EventListenerMap getEventListeners() {
+        return this.eventListeners;
+    }
+
+    public EventFilter getEventFilter() {
+        return this.eventFilter;
     }
 
     @Override

@@ -11,9 +11,9 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+  maven { url = "https://maven.nucleoid.xyz" }
   maven { url = "https://maven.gegy.dev/" }
   maven { url = "https://jitpack.io/" }
-  mavenLocal()
 }
 
 dependencies {
@@ -22,6 +22,8 @@ dependencies {
   modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+  modImplementation include('xyz.nucleoid:stimuli:0.1.0')
 
   modCompileOnly "dev.gegy:player-roles:1.2.0"
 

@@ -4,9 +4,11 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import xyz.nucleoid.leukocyte.roles.RoleAccessor;
+import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +40,16 @@ public final class ProtectionExclusions {
         this.roles = new ObjectOpenHashSet<>(roles);
         this.players = new ObjectOpenHashSet<>(players);
         this.includeOperators = includeOperators;
+    }
+
+    public EventFilter applyToFilter(EventFilter filter) {
+        return source -> {
+            if (filter.accepts(source)) {
+                Entity entity = source.getEntity();
+                return !(entity instanceof PlayerEntity && this.isExcluded((PlayerEntity) entity));
+            }
+            return false;
+        };
     }
 
     public void includeOperators() {

@@ -4,22 +4,7 @@
   "package": "xyz.nucleoid.leukocyte.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "rule.AreaHelperMixin",
-    "rule.CraftingResultInventoryMixin",
-    "rule.FarmlandBlockMixin",
-    "rule.FlowableFluidMixin",
-    "rule.FrostedIceBlockMixin",
-    "rule.HungerManagerMixin",
-    "rule.IceBlockMixin",
-    "rule.ItemEntityMixin",
-    "rule.PlayerEntityMixin",
-    "rule.ScreenHandlerMixin",
-    "rule.ServerPlayerEntityMixin",
-    "rule.ServerPlayerInteractionManagerMixin",
-    "rule.TntBlockMixin",
-    "shape.ServerPlayerEntityMixin",
-    "rule.WitherSkullBlockMixin",
-    "rule.FireBlockMixin"
+    "shape.ServerPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

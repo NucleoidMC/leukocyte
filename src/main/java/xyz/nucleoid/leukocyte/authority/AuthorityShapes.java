@@ -6,11 +6,9 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.leukocyte.shape.UnionShape;
+import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,12 +71,8 @@ public final class AuthorityShapes {
         return index;
     }
 
-    public boolean intersects(RegistryKey<World> dimension) {
-        return this.combinedShape.intersects(dimension);
-    }
-
-    public boolean contains(RegistryKey<World> dimension, BlockPos pos) {
-        return this.combinedShape.contains(dimension, pos);
+    public EventFilter asEventFilter() {
+        return this.combinedShape.asEventFilter();
     }
 
     public Text displayList() {

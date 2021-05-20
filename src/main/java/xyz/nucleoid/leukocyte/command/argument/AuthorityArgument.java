@@ -24,7 +24,7 @@ public final class AuthorityArgument {
                     Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
 
                     return CommandSource.suggestMatching(
-                            leukocyte.authorities().filter(authority -> !authority.isTransient).map(authority -> authority.key),
+                            leukocyte.getAuthorities().stream().map(Authority::getKey),
                             builder
                     );
                 });

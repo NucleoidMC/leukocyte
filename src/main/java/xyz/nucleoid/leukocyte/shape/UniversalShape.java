@@ -4,9 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
+import xyz.nucleoid.stimuli.filter.EventFilter;
 
 public final class UniversalShape implements ProtectionShape {
     public static final UniversalShape INSTANCE = new UniversalShape();
@@ -17,13 +15,8 @@ public final class UniversalShape implements ProtectionShape {
     }
 
     @Override
-    public boolean intersects(RegistryKey<World> dimension) {
-        return true;
-    }
-
-    @Override
-    public boolean contains(RegistryKey<World> dimension, BlockPos pos) {
-        return true;
+    public EventFilter asEventFilter() {
+        return EventFilter.global();
     }
 
     @Override

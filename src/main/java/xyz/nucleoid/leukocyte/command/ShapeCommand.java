@@ -162,7 +162,7 @@ public final class ShapeCommand {
             Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
             leukocyte.replaceAuthority(authority, authority.addShape(name, shape));
 
-            source.sendFeedback(new LiteralText("Added shape as '" + name + "' to '" + authority.key + "'!"), true);
+            source.sendFeedback(new LiteralText("Added shape as '" + name + "' to '" + authority.getKey() + "'!"), true);
 
             return Command.SINGLE_SUCCESS;
         } else {
@@ -184,7 +184,7 @@ public final class ShapeCommand {
         Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
         leukocyte.replaceAuthority(authority, newAuthority);
 
-        source.sendFeedback(new LiteralText("Removed shape '" + name + "' from '" + authority.key + "'!"), true);
+        source.sendFeedback(new LiteralText("Removed shape '" + name + "' from '" + authority.getKey() + "'!"), true);
 
         return Command.SINGLE_SUCCESS;
     }
