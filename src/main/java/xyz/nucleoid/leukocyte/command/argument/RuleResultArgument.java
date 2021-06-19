@@ -20,7 +20,7 @@ public final class RuleResultArgument {
     }
 
     public static RuleResult get(CommandContext<ServerCommandSource> context, String name) {
-        String key = StringArgumentType.getString(context, name);
+        var key = StringArgumentType.getString(context, name);
         return RuleResult.byKeyOrPass(key);
     }
 }

@@ -69,7 +69,7 @@ public final class ProtectionRule {
     }
 
     public static ProtectionRule register(String key) {
-        ProtectionRule rule = new ProtectionRule(key);
+        var rule = new ProtectionRule(key);
         REGISTRY.register(key, rule);
         return rule;
     }

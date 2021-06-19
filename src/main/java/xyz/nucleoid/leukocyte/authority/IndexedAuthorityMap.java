@@ -9,9 +9,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.stimuli.EventSource;
-import xyz.nucleoid.stimuli.event.EventListenerMap;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
-import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,10 +22,10 @@ public final class IndexedAuthorityMap implements AuthorityMap {
     private final Reference2ObjectMap<RegistryKey<World>, DimensionMap> byDimension = new Reference2ObjectOpenHashMap<>();
 
     public void addDimension(RegistryKey<World> dimension) {
-        EventSource source = EventSource.allOf(dimension);
+        var source = EventSource.allOf(dimension);
 
-        DimensionMap dimensionMap = new DimensionMap(dimension);
-        for (Authority authority : this.main) {
+        var dimensionMap = new DimensionMap(dimension);
+        for (var authority : this.main) {
             if (authority.getEventFilter().accepts(source)) {
                 dimensionMap.add(authority);
             }
@@ -41,9 +39,9 @@ public final class IndexedAuthorityMap implements AuthorityMap {
     }
 
     public Iterable<Authority> select(RegistryKey<World> dimension, StimulusEvent<?> event) {
-        DimensionMap dimensionMap = this.byDimension.get(dimension);
+        var dimensionMap = this.byDimension.get(dimension);
         if (dimensionMap != null) {
-            AuthorityMap map = dimensionMap.byEvent.get(event);
+            var map = dimensionMap.byEvent.get(event);
             if (map != null) {
                 return map;
             }
@@ -80,7 +78,7 @@ public final class IndexedAuthorityMap implements AuthorityMap {
     @Override
     @Nullable
     public Authority remove(String key) {
-        Authority authority = this.main.remove(key);
+        var authority = this.main.remove(key);
         if (authority != null) {
             this.removeFromDimension(key);
             return authority;
@@ -126,21 +124,21 @@ public final class IndexedAuthorityMap implements AuthorityMap {
     }
 
     private void addToDimension(Authority authority) {
-        EventFilter filter = authority.getEventFilter();
-        for (Map.Entry<RegistryKey<World>, DimensionMap> entry : Reference2ObjectMaps.fastIterable(this.byDimension)) {
-            RegistryKey<World> dimension = entry.getKey();
+        var filter = authority.getEventFilter();
+        for (var entry : Reference2ObjectMaps.fastIterable(this.byDimension)) {
+            var dimension = entry.getKey();
             if (filter.accepts(EventSource.allOf(dimension))) {
-                DimensionMap dimensionMap = entry.getValue();
+                var dimensionMap = entry.getValue();
                 dimensionMap.add(authority);
             }
         }
     }
 
     private void replaceInDimension(Authority from, Authority to) {
-        EventFilter fromFilter = from.getEventFilter();
-        EventFilter toFilter = to.getEventFilter();
+        var fromFilter = from.getEventFilter();
+        var toFilter = to.getEventFilter();
 
-        for (DimensionMap dimensionMap : this.byDimension.values()) {
+        for (var dimensionMap : this.byDimension.values()) {
             boolean fromIncluded = fromFilter.accepts(dimensionMap.eventSource);
             boolean toIncluded = toFilter.accepts(dimensionMap.eventSource);
             if (fromIncluded && toIncluded) {
@@ -154,7 +152,7 @@ public final class IndexedAuthorityMap implements AuthorityMap {
     }
 
     private void removeFromDimension(String key) {
-        for (DimensionMap authorities : this.byDimension.values()) {
+        for (var authorities : this.byDimension.values()) {
             authorities.remove(key);
         }
     }
@@ -168,18 +166,18 @@ public final class IndexedAuthorityMap implements AuthorityMap {
         }
 
         void add(Authority authority) {
-            EventListenerMap listeners = authority.getEventListeners();
-            for (StimulusEvent<?> event : listeners.getEvents()) {
+            var listeners = authority.getEventListeners();
+            for (var event : listeners.getEvents()) {
                 this.getMapForEvent(event).add(authority);
             }
         }
 
         void replace(Authority from, Authority to) {
-            Set<StimulusEvent<?>> fromEvents = from.getEventListeners().getEvents();
-            Set<StimulusEvent<?>> toEvents = to.getEventListeners().getEvents();
+            var fromEvents = from.getEventListeners().getEvents();
+            var toEvents = to.getEventListeners().getEvents();
 
-            for (StimulusEvent<?> event : fromEvents) {
-                AuthorityMap map = this.getMapForEvent(event);
+            for (var event : fromEvents) {
+                var map = this.getMapForEvent(event);
                 if (toEvents.contains(event)) {
                     map.replace(from, to);
                 } else {
@@ -187,7 +185,7 @@ public final class IndexedAuthorityMap implements AuthorityMap {
                 }
             }
 
-            for (StimulusEvent<?> event : toEvents) {
+            for (var event : toEvents) {
                 if (!fromEvents.contains(event)) {
                     this.getMapForEvent(event).add(to);
                 }
@@ -195,7 +193,7 @@ public final class IndexedAuthorityMap implements AuthorityMap {
         }
 
         void remove(String key) {
-            for (AuthorityMap map : this.byEvent.values()) {
+            for (var map : this.byEvent.values()) {
                 map.remove(key);
             }
         }

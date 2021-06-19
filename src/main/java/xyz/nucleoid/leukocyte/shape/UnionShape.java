@@ -20,7 +20,7 @@ public final class UnionShape implements ProtectionShape {
     public UnionShape(ProtectionShape... scopes) {
         this.scopes = scopes;
 
-        EventFilter[] filters = new EventFilter[scopes.length];
+        var filters = new EventFilter[scopes.length];
         for (int i = 0; i < scopes.length; i++) {
             filters[i] = scopes[i].asEventFilter();
         }
@@ -72,7 +72,7 @@ public final class UnionShape implements ProtectionShape {
 
     @Override
     public ProtectionShape union(ProtectionShape other) {
-        ProtectionShape[] scopes = new ProtectionShape[this.scopes.length + 1];
+        var scopes = new ProtectionShape[this.scopes.length + 1];
         System.arraycopy(this.scopes, 0, scopes, 0, this.scopes.length);
         scopes[scopes.length - 1] = other;
         return new UnionShape(scopes);

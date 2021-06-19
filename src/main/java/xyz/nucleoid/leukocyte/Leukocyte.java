@@ -1,17 +1,14 @@
 package xyz.nucleoid.leukocyte;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.leukocyte.authority.Authority;
@@ -33,12 +30,11 @@ public final class Leukocyte extends PersistentState {
     private final IndexedAuthorityMap authorities = new IndexedAuthorityMap();
 
     private Leukocyte() {
-        super(ID);
     }
 
     public static Leukocyte get(MinecraftServer server) {
-        PersistentStateManager state = server.getOverworld().getPersistentStateManager();
-        return state.getOrCreate(Leukocyte::new, ID);
+        var state = server.getOverworld().getPersistentStateManager();
+        return state.getOrCreate(Leukocyte::readNbt, Leukocyte::new, ID);
     }
 
     public static void registerRuleEnforcer(ProtectionRuleEnforcer enforcer) {
@@ -46,7 +42,7 @@ public final class Leukocyte extends PersistentState {
     }
 
     public static EventListenerMap createEventListenersFor(ProtectionRuleMap rules) {
-        EventListenerMap listeners = new EventListenerMap();
+        var listeners = new EventListenerMap();
         for (ProtectionRuleEnforcer enforcer : RULE_ENFORCERS) {
             enforcer.applyTo(rules, listeners);
         }
@@ -87,11 +83,20 @@ public final class Leukocyte extends PersistentState {
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag root) {
-        ListTag authorityList = new ListTag();
+    public boolean isDirty() {
+        return true;
+    }
 
-        for (Authority authority : this.authorities) {
-            DataResult<Tag> result = Authority.CODEC.encodeStart(NbtOps.INSTANCE, authority);
+    public AuthorityMap getAuthorities() {
+        return this.authorities;
+    }
+
+    @Override
+    public NbtCompound writeNbt(NbtCompound root) {
+        var authorityList = new NbtList();
+
+        for (var authority : this.authorities) {
+            var result = Authority.CODEC.encodeStart(NbtOps.INSTANCE, authority);
             result.result().ifPresent(authorityList::add);
         }
 
@@ -100,26 +105,18 @@ public final class Leukocyte extends PersistentState {
         return root;
     }
 
-    @Override
-    public void fromTag(CompoundTag root) {
-        this.authorities.clear();
+    private static Leukocyte readNbt(NbtCompound root) {
+        var leukocyte = new Leukocyte();
 
-        ListTag authoritiesList = root.getList("authorities", NbtType.COMPOUND);
+        var authoritiesList = root.getList("authorities", NbtType.COMPOUND);
 
-        for (Tag authorityTag : authoritiesList) {
+        for (var authorityTag : authoritiesList) {
             Authority.CODEC.decode(NbtOps.INSTANCE, authorityTag)
                     .map(Pair::getFirst)
                     .result()
-                    .ifPresent(this::addAuthority);
+                    .ifPresent(leukocyte::addAuthority);
         }
-    }
 
-    @Override
-    public boolean isDirty() {
-        return true;
-    }
-
-    public AuthorityMap getAuthorities() {
-        return this.authorities;
+        return leukocyte;
     }
 }

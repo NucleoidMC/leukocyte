@@ -55,18 +55,18 @@ public enum RuleResult {
             return this.display();
         }
 
-        String command = "/protect set rule " + authority.getKey() + " " + rule.getKey() + " " + this.getOpposite().key;
-        ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command);
+        var command = "/protect set rule " + authority.getKey() + " " + rule.getKey() + " " + this.getOpposite().key;
+        var clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command);
 
         return this.display().styled(style -> style.withClickEvent(clickEvent));
     }
 
     public RuleResult getOpposite() {
-        switch (this) {
-            case ALLOW: return RuleResult.DENY;
-            case DENY: return RuleResult.ALLOW;
-            default: return null;
-        }
+        return switch (this) {
+            case ALLOW -> RuleResult.DENY;
+            case DENY -> RuleResult.ALLOW;
+            default -> null;
+        };
     }
 
     public boolean isDefinitive() {
@@ -78,11 +78,11 @@ public enum RuleResult {
     }
 
     public ActionResult asActionResult() {
-        switch (this) {
-            case ALLOW: return ActionResult.SUCCESS;
-            case DENY: return ActionResult.FAIL;
-            default: return ActionResult.PASS;
-        }
+        return switch (this) {
+            case ALLOW -> ActionResult.SUCCESS;
+            case DENY -> ActionResult.FAIL;
+            default -> ActionResult.PASS;
+        };
     }
 
     @NotNull

@@ -14,7 +14,7 @@ import xyz.nucleoid.stimuli.filter.EventFilter;
 public final class DimensionShape implements ProtectionShape {
     public static final Codec<DimensionShape> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                Identifier.CODEC.xmap(id -> RegistryKey.of(Registry.DIMENSION, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension)
+                Identifier.CODEC.xmap(id -> RegistryKey.of(Registry.WORLD_KEY, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension)
         ).apply(instance, DimensionShape::new);
     });
 

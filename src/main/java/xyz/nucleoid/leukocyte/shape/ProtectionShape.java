@@ -27,12 +27,12 @@ public interface ProtectionShape {
     }
 
     static ProtectionShape box(RegistryKey<World> dimension, BlockPos a, BlockPos b) {
-        BlockPos min = new BlockPos(
+        var min = new BlockPos(
                 Math.min(a.getX(), b.getX()),
                 Math.min(a.getY(), b.getY()),
                 Math.min(a.getZ(), b.getZ())
         );
-        BlockPos max = new BlockPos(
+        var max = new BlockPos(
                 Math.max(a.getX(), b.getX()),
                 Math.max(a.getY(), b.getY()),
                 Math.max(a.getZ(), b.getZ())

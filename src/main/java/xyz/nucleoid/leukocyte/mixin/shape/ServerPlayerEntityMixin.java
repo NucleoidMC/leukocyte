@@ -24,7 +24,7 @@ public class ServerPlayerEntityMixin implements ShapeBuilder {
 
     @Override
     public ProtectionShape finish() {
-        ProtectionShape[] shapes = this.shapes.toArray(new ProtectionShape[0]);
+        var shapes = this.shapes.toArray(new ProtectionShape[0]);
         this.shapes = null;
         return ProtectionShape.union(shapes);
     }

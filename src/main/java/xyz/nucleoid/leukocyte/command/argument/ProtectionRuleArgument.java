@@ -27,8 +27,8 @@ public final class ProtectionRuleArgument {
     }
 
     public static ProtectionRule get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        String key = StringArgumentType.getString(context, name);
-        ProtectionRule rule = ProtectionRule.byKey(key);
+        var key = StringArgumentType.getString(context, name);
+        var rule = ProtectionRule.byKey(key);
         if (rule == null) {
             throw RULE_DOES_NOT_EXIST.create(key);
         }

@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import xyz.nucleoid.leukocyte.roles.RoleAccessor;
@@ -45,8 +44,8 @@ public final class ProtectionExclusions {
     public EventFilter applyToFilter(EventFilter filter) {
         return source -> {
             if (filter.accepts(source)) {
-                Entity entity = source.getEntity();
-                return !(entity instanceof PlayerEntity && this.isExcluded((PlayerEntity) entity));
+                var entity = source.getEntity();
+                return !(entity instanceof PlayerEntity player && this.isExcluded(player));
             }
             return false;
         };
@@ -81,9 +80,9 @@ public final class ProtectionExclusions {
             return true;
         }
 
-        if (player instanceof ServerPlayerEntity) {
-            for (String excludeRole : this.roles) {
-                if (RoleAccessor.INSTANCE.hasRole(((ServerPlayerEntity) player), excludeRole)) {
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            for (var excludeRole : this.roles) {
+                if (RoleAccessor.INSTANCE.hasRole(serverPlayer, excludeRole)) {
                     return true;
                 }
             }

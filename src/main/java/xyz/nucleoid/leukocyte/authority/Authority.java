@@ -61,12 +61,12 @@ public final class Authority implements Comparable<Authority> {
     }
 
     public Authority addShape(String name, ProtectionShape shape) {
-        AuthorityShapes newShapes = this.shapes.withShape(name, shape);
+        var newShapes = this.shapes.withShape(name, shape);
         return new Authority(this.key, this.level, newShapes, this.rules, this.exclusions.copy());
     }
 
     public Authority removeShape(String name) {
-        AuthorityShapes newShapes = this.shapes.removeShape(name);
+        var newShapes = this.shapes.removeShape(name);
         if (this.shapes == newShapes) {
             return this;
         }

@@ -13,7 +13,7 @@ import java.util.Map;
 public final class ProtectionRuleMap {
     public static final Codec<ProtectionRuleMap> CODEC = Codec.unboundedMap(ProtectionRule.CODEC, RuleResult.CODEC).xmap(
             map -> {
-                ProtectionRuleMap rules = new ProtectionRuleMap();
+                var rules = new ProtectionRuleMap();
                 rules.map.putAll(map);
                 return rules;
             },
@@ -43,7 +43,7 @@ public final class ProtectionRuleMap {
             return this;
         }
 
-        ProtectionRuleMap map = this.copy();
+        var map = this.copy();
         map.put(rule, result);
         return map;
     }
@@ -60,9 +60,9 @@ public final class ProtectionRuleMap {
     public MutableText clickableDisplay(Authority authority) {
         MutableText text = new LiteralText("");
 
-        for (Map.Entry<ProtectionRule, RuleResult> entry : this.map.entrySet()) {
-            ProtectionRule rule = entry.getKey();
-            RuleResult result = entry.getValue();
+        for (var entry : this.map.entrySet()) {
+            var rule = entry.getKey();
+            var result = entry.getValue();
 
             text = text.append("  ").append(new LiteralText(rule.getKey()).formatted(Formatting.GRAY))
                     .append(" = ").append(result.clickableDisplay(authority, rule))

@@ -1,10 +1,10 @@
 plugins {
-  id 'fabric-loom' version '0.5-SNAPSHOT'
+  id 'fabric-loom' version '0.8-SNAPSHOT'
   id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -13,7 +13,6 @@ group = project.maven_group
 repositories {
   maven { url = "https://maven.nucleoid.xyz" }
   maven { url = "https://maven.gegy.dev/" }
-  maven { url = "https://jitpack.io/" }
 }
 
 dependencies {
@@ -23,11 +22,11 @@ dependencies {
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-  modImplementation include('xyz.nucleoid:stimuli:0.1.0')
+  modImplementation include('xyz.nucleoid:stimuli:0.2.0+1.17')
 
-  modCompileOnly "dev.gegy:player-roles:1.3.1"
+  modCompileOnly "dev.gegy:player-roles-api:1.4.2"
 
-  modRuntime("com.github.SuperCoder7979:databreaker:0.2.6") {
+  modRuntime("supercoder79:databreaker:0.2.7") {
     exclude module: "fabric-loader"
   }
 }
@@ -35,27 +34,24 @@ dependencies {
 processResources {
   inputs.property "version", project.version
 
-  from(sourceSets.main.resources.srcDirs) {
-    include "fabric.mod.json"
+  filesMatching("fabric.mod.json") {
     expand "version": project.version
   }
-
-  from(sourceSets.main.resources.srcDirs) {
-    exclude "fabric.mod.json"
-  }
 }
 
-tasks.withType(JavaCompile) {
-  options.encoding = "UTF-8"
+tasks.withType(JavaCompile).configureEach {
+  it.options.encoding = "UTF-8"
+  it.options.release = 16
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-  classifier = "sources"
-  from sourceSets.main.allSource
+java {
+  withSourcesJar()
 }
 
 jar {
-  from "LICENSE"
+  from("LICENSE") {
+    rename { "${it}_${project.archivesBaseName}" }
+  }
 }
 
 def env = System.getenv()

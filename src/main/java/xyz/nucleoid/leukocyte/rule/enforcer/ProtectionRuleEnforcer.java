@@ -17,15 +17,7 @@ public interface ProtectionRuleEnforcer {
         T createListener(ActionResult rule);
     }
 
-    final class ForRule {
-        final EventRegistrar events;
-        final RuleResult result;
-
-        ForRule(EventRegistrar events, RuleResult result) {
-            this.events = events;
-            this.result = result;
-        }
-
+    record ForRule(EventRegistrar events, RuleResult result) {
         public <T> void applySimple(StimulusEvent<T> event, ListenerFactory<T> factory) {
             if (this.result.isDefinitive()) {
                 this.events.listen(event, factory.createListener(this.result.asActionResult()));

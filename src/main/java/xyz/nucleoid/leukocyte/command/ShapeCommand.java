@@ -10,14 +10,9 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
 import xyz.nucleoid.leukocyte.Leukocyte;
-import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.leukocyte.shape.ShapeBuilder;
@@ -78,10 +73,10 @@ public final class ShapeCommand {
     }
 
     private static int startShape(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = context.getSource();
+        var player = source.getPlayer();
 
-        ShapeBuilder builder = ShapeBuilder.start(player);
+        var builder = ShapeBuilder.start(player);
         if (builder != null) {
             source.sendFeedback(
                     new LiteralText("Started building a shape! Use ")
@@ -98,10 +93,10 @@ public final class ShapeCommand {
     }
 
     private static int stopShape(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = context.getSource();
+        var player = source.getPlayer();
 
-        ShapeBuilder builder = ShapeBuilder.from(player);
+        var builder = ShapeBuilder.from(player);
         if (builder != null) {
             builder.finish();
             source.sendFeedback(new LiteralText("Canceled shape building!"), false);
@@ -112,21 +107,21 @@ public final class ShapeCommand {
     }
 
     private static int addBox(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        RegistryKey<World> dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
-        BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
-        BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
+        var dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
+        var min = BlockPosArgumentType.getBlockPos(context, "min");
+        var max = BlockPosArgumentType.getBlockPos(context, "max");
         return addShape(context.getSource(), ProtectionShape.box(dimension, min, max));
     }
 
     private static int addLocalBox(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        RegistryKey<World> dimension = context.getSource().getWorld().getRegistryKey();
-        BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
-        BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
+        var dimension = context.getSource().getWorld().getRegistryKey();
+        var min = BlockPosArgumentType.getBlockPos(context, "min");
+        var max = BlockPosArgumentType.getBlockPos(context, "max");
         return addShape(context.getSource(), ProtectionShape.box(dimension, min, max));
     }
 
     private static int addDimension(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        RegistryKey<World> dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
+        var dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
         return addShape(context.getSource(), ProtectionShape.dimension(dimension));
     }
 
@@ -135,9 +130,9 @@ public final class ShapeCommand {
     }
 
     private static int addShape(ServerCommandSource source, ProtectionShape shape) throws CommandSyntaxException {
-        ServerPlayerEntity player = source.getPlayer();
+        var player = source.getPlayer();
 
-        ShapeBuilder shapeBuilder = ShapeBuilder.from(player);
+        var shapeBuilder = ShapeBuilder.from(player);
         if (shapeBuilder != null) {
             shapeBuilder.add(shape);
             source.sendFeedback(new LiteralText("Added ").append(shape.display()).append(" to current shape!"), false);
@@ -149,17 +144,17 @@ public final class ShapeCommand {
     }
 
     private static int addShapeToAuthority(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = context.getSource();
+        var player = source.getPlayer();
 
-        String name = StringArgumentType.getString(context, "name");
-        Authority authority = AuthorityArgument.get(context, "authority");
+        var name = StringArgumentType.getString(context, "name");
+        var authority = AuthorityArgument.get(context, "authority");
 
-        ShapeBuilder builder = ShapeBuilder.from(player);
+        var builder = ShapeBuilder.from(player);
         if (builder != null) {
-            ProtectionShape shape = builder.finish();
+            var shape = builder.finish();
 
-            Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
+            var leukocyte = Leukocyte.get(source.getMinecraftServer());
             leukocyte.replaceAuthority(authority, authority.addShape(name, shape));
 
             source.sendFeedback(new LiteralText("Added shape as '" + name + "' to '" + authority.getKey() + "'!"), true);
@@ -171,17 +166,17 @@ public final class ShapeCommand {
     }
 
     private static int removeShapeFromAuthority(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        Authority authority = AuthorityArgument.get(context, "authority");
-        String name = StringArgumentType.getString(context, "name");
+        var authority = AuthorityArgument.get(context, "authority");
+        var name = StringArgumentType.getString(context, "name");
 
-        Authority newAuthority = authority.removeShape(name);
+        var newAuthority = authority.removeShape(name);
         if (authority == newAuthority) {
             throw SHAPE_NOT_FOUND.create();
         }
 
-        Leukocyte leukocyte = Leukocyte.get(source.getMinecraftServer());
+        var leukocyte = Leukocyte.get(source.getMinecraftServer());
         leukocyte.replaceAuthority(authority, newAuthority);
 
         source.sendFeedback(new LiteralText("Removed shape '" + name + "' from '" + authority.getKey() + "'!"), true);

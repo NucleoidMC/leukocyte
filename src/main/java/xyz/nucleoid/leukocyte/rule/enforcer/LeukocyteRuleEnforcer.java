@@ -9,7 +9,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.ProtectionRuleMap;
-import xyz.nucleoid.leukocyte.rule.RuleResult;
 import xyz.nucleoid.stimuli.event.EventRegistrar;
 import xyz.nucleoid.stimuli.event.block.BlockBreakEvent;
 import xyz.nucleoid.stimuli.event.block.BlockDropItemsEvent;
@@ -85,10 +84,10 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
     }
 
     private void applyInteractionRules(ProtectionRuleMap rules, EventRegistrar events) {
-        RuleResult interact = rules.test(ProtectionRule.INTERACT);
-        RuleResult interactBlocks = rules.test(ProtectionRule.INTERACT_BLOCKS).orElse(interact);
-        RuleResult interactEntities = rules.test(ProtectionRule.INTERACT_ENTITIES).orElse(interact);
-        RuleResult interactItems = rules.test(ProtectionRule.INTERACT_ITEMS).orElse(interact);
+        var interact = rules.test(ProtectionRule.INTERACT);
+        var interactBlocks = rules.test(ProtectionRule.INTERACT_BLOCKS).orElse(interact);
+        var interactEntities = rules.test(ProtectionRule.INTERACT_ENTITIES).orElse(interact);
+        var interactItems = rules.test(ProtectionRule.INTERACT_ITEMS).orElse(interact);
 
         this.forRule(events, interactBlocks)
                 .applySimple(BlockUseEvent.EVENT, rule -> (player, hand, hitResult) -> rule);

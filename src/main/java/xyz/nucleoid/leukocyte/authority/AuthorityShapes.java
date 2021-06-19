@@ -25,7 +25,7 @@ public final class AuthorityShapes {
     public AuthorityShapes(Entry... entries) {
         this.entries = entries;
 
-        ProtectionShape[] shapes = new ProtectionShape[entries.length];
+        var shapes = new ProtectionShape[entries.length];
         for (int i = 0; i < shapes.length; i++) {
             shapes[i] = entries[i].shape;
         }
@@ -37,7 +37,7 @@ public final class AuthorityShapes {
     }
 
     public AuthorityShapes withShape(String name, ProtectionShape shape) {
-        Entry[] newShapes = Arrays.copyOf(this.entries, this.entries.length + 1);
+        var newShapes = Arrays.copyOf(this.entries, this.entries.length + 1);
         newShapes[newShapes.length - 1] = new Entry(name, shape);
         return new AuthorityShapes(newShapes);
     }
@@ -50,7 +50,7 @@ public final class AuthorityShapes {
 
         int writer = 0;
 
-        Entry[] newEntries = new Entry[this.entries.length - 1];
+        var newEntries = new Entry[this.entries.length - 1];
         for (int i = 0; i < this.entries.length; i++) {
             if (i != index) {
                 newEntries[writer++] = this.entries[i];
@@ -81,7 +81,7 @@ public final class AuthorityShapes {
         }
 
         MutableText text = new LiteralText("");
-        for (Entry entry : this.entries) {
+        for (var entry : this.entries) {
             text = text.append(new LiteralText("  " + entry.name).formatted(Formatting.AQUA))
                     .append(": ")
                     .append(entry.shape.displayShort())
@@ -99,20 +99,12 @@ public final class AuthorityShapes {
         return this.entries.length == 0;
     }
 
-    public static class Entry {
+    public record Entry(String name, ProtectionShape shape) {
         public static final Codec<Entry> CODEC = RecordCodecBuilder.create(instance -> {
             return instance.group(
                     Codec.STRING.fieldOf("name").forGetter(entry -> entry.name),
                     ProtectionShape.CODEC.fieldOf("shape").forGetter(entry -> entry.shape)
             ).apply(instance, Entry::new);
         });
-
-        public final String name;
-        public final ProtectionShape shape;
-
-        public Entry(String name, ProtectionShape shape) {
-            this.name = name;
-            this.shape = shape;
-        }
     }
 }

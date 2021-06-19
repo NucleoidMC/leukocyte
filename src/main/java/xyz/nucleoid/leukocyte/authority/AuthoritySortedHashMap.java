@@ -44,7 +44,7 @@ public final class AuthoritySortedHashMap implements AuthorityMap {
     @Override
     @Nullable
     public Authority remove(String key) {
-        Authority authority = this.byKey.remove(key);
+        var authority = this.byKey.remove(key);
         if (authority != null) {
             this.authorities.remove(authority);
             return authority;

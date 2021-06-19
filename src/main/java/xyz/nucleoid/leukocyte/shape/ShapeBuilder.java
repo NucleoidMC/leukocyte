@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 public interface ShapeBuilder {
     @Nullable
     static ShapeBuilder start(ServerPlayerEntity player) {
-        ShapeBuilder builder = (ShapeBuilder) player;
+        var builder = (ShapeBuilder) player;
         if (!builder.isBuilding()) {
             builder.start();
             return builder;
@@ -17,7 +17,7 @@ public interface ShapeBuilder {
 
     @Nullable
     static ShapeBuilder from(ServerPlayerEntity player) {
-        ShapeBuilder builder = (ShapeBuilder) player;
+        var builder = (ShapeBuilder) player;
         if (builder.isBuilding()) {
             return builder;
         }
