@@ -145,7 +145,7 @@ public final class ProtectCommand {
         var key = StringArgumentType.getString(context, "authority");
 
         var source = context.getSource();
-        var leukocyte = Leukocyte.get(source.getMinecraftServer());
+        var leukocyte = Leukocyte.get(source.getServer());
         var authority = operator.apply(Authority.create(key));
 
         if (leukocyte.addAuthority(authority)) {
@@ -174,7 +174,7 @@ public final class ProtectCommand {
     private static int remove(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
 
-        var leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
+        var leukocyte = Leukocyte.get(context.getSource().getServer());
         leukocyte.removeAuthority(authority.getKey());
 
         context.getSource().sendFeedback(new LiteralText("Removed authority " + authority.getKey()), true);
@@ -183,7 +183,7 @@ public final class ProtectCommand {
     }
 
     private static int setRule(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
+        var leukocyte = Leukocyte.get(context.getSource().getServer());
         var authority = AuthorityArgument.get(context, "authority");
 
         var rule = ProtectionRuleArgument.get(context, "rule");
@@ -201,7 +201,7 @@ public final class ProtectCommand {
         var authority = AuthorityArgument.get(context, "authority");
         int level = IntegerArgumentType.getInteger(context, "level");
 
-        var leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
+        var leukocyte = Leukocyte.get(context.getSource().getServer());
 
         var newAuthority = authority.withLevel(level);
         leukocyte.replaceAuthority(authority, newAuthority);
@@ -270,7 +270,7 @@ public final class ProtectCommand {
     }
 
     private static int listAuthorities(CommandContext<ServerCommandSource> context) {
-        var leukocyte = Leukocyte.get(context.getSource().getMinecraftServer());
+        var leukocyte = Leukocyte.get(context.getSource().getServer());
 
         var authorities = leukocyte.getAuthorities();
         if (authorities.isEmpty()) {
@@ -294,7 +294,7 @@ public final class ProtectCommand {
         var source = context.getSource();
         var player = source.getPlayer();
 
-        var leukocyte = Leukocyte.get(source.getMinecraftServer());
+        var leukocyte = Leukocyte.get(source.getServer());
 
         var authorities = new ArrayList<Authority>();
 

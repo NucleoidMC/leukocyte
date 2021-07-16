@@ -21,7 +21,7 @@ public final class AuthorityArgument {
         return CommandManager.argument(name, StringArgumentType.string())
                 .suggests((context, builder) -> {
                     var source = context.getSource();
-                    var leukocyte = Leukocyte.get(source.getMinecraftServer());
+                    var leukocyte = Leukocyte.get(source.getServer());
 
                     return CommandSource.suggestMatching(
                             leukocyte.getAuthorities().stream().map(Authority::getKey),
@@ -34,7 +34,7 @@ public final class AuthorityArgument {
         var key = StringArgumentType.getString(context, name);
 
         var source = context.getSource();
-        var leukocyte = Leukocyte.get(source.getMinecraftServer());
+        var leukocyte = Leukocyte.get(source.getServer());
 
         var authority = leukocyte.getAuthorityByKey(key);
         if (authority == null) {

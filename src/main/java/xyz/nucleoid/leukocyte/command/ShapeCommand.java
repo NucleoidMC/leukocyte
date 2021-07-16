@@ -154,7 +154,7 @@ public final class ShapeCommand {
         if (builder != null) {
             var shape = builder.finish();
 
-            var leukocyte = Leukocyte.get(source.getMinecraftServer());
+            var leukocyte = Leukocyte.get(source.getServer());
             leukocyte.replaceAuthority(authority, authority.addShape(name, shape));
 
             source.sendFeedback(new LiteralText("Added shape as '" + name + "' to '" + authority.getKey() + "'!"), true);
@@ -176,7 +176,7 @@ public final class ShapeCommand {
             throw SHAPE_NOT_FOUND.create();
         }
 
-        var leukocyte = Leukocyte.get(source.getMinecraftServer());
+        var leukocyte = Leukocyte.get(source.getServer());
         leukocyte.replaceAuthority(authority, newAuthority);
 
         source.sendFeedback(new LiteralText("Removed shape '" + name + "' from '" + authority.getKey() + "'!"), true);
