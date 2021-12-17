@@ -90,6 +90,11 @@ public final class ProtectCommand {
                                 .then(RoleArgument.argument("role")
                                 .executes(ProtectCommand::addRoleExclusion))
                             )
+
+                            .then(literal("permission")
+                                .then(argument("permission", StringArgumentType.word())
+                                .executes(ProtectCommand::addPermissionExclusion))
+                            )
                     ))
                     .then(literal("remove")
                         .then(AuthorityArgument.argument("authority")
@@ -101,6 +106,11 @@ public final class ProtectCommand {
                             .then(literal("role")
                                 .then(RoleArgument.argument("role")
                                 .executes(ProtectCommand::removeRoleExclusion))
+                            )
+
+                            .then(literal("permission")
+                                .then(argument("permission", StringArgumentType.word())
+                                .executes(ProtectCommand::removePermissionExclusion))
                             )
                     ))
                 )
@@ -264,6 +274,32 @@ public final class ProtectCommand {
             context.getSource().sendFeedback(new LiteralText("Removed '" + role + "' exclusion from " + authority.getKey()), true);
         } else {
             context.getSource().sendError(new LiteralText("'" + role + "' is not excluded"));
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int addPermissionExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        var authority = AuthorityArgument.get(context, "authority");
+        var permission = StringArgumentType.getString(context, "permission");
+
+        if (authority.getExclusions().addPermission(permission)) {
+            context.getSource().sendFeedback(new LiteralText("Added '" + permission + "' exclusion to " + authority.getKey()), true);
+        } else {
+            context.getSource().sendError(new LiteralText("'" + permission + "' is already excluded"));
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int removePermissionExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        var authority = AuthorityArgument.get(context, "authority");
+        var permission = StringArgumentType.getString(context, "permission");
+
+        if (authority.getExclusions().removePermission(permission)) {
+            context.getSource().sendFeedback(new LiteralText("Removed '" + permission + "' exclusion from " + authority.getKey()), true);
+        } else {
+            context.getSource().sendError(new LiteralText("'" + permission + "' is not excluded"));
         }
 
         return Command.SINGLE_SUCCESS;

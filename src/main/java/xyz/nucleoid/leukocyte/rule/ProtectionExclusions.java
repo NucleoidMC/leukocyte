@@ -6,13 +6,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import xyz.nucleoid.leukocyte.roles.PermissionAccessor;
 import xyz.nucleoid.leukocyte.roles.RoleAccessor;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public final class ProtectionExclusions {
     private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
@@ -20,6 +18,7 @@ public final class ProtectionExclusions {
     public static final Codec<ProtectionExclusions> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Codec.STRING.listOf().fieldOf("roles").forGetter(exclusions -> new ArrayList<>(exclusions.roles)),
+                Codec.STRING.listOf().optionalFieldOf("permissions", Collections.emptyList()).forGetter(exclusions -> new ArrayList<>(exclusions.permissions)),
                 UUID_CODEC.listOf().fieldOf("players").forGetter(exclusions -> new ArrayList<>(exclusions.players)),
                 Codec.BOOL.fieldOf("include_operators").forGetter(exclusions -> exclusions.includeOperators)
         ).apply(instance, ProtectionExclusions::new);
@@ -29,15 +28,18 @@ public final class ProtectionExclusions {
     private final Set<UUID> players;
 
     private boolean includeOperators;
+    private Set<String> permissions;
 
     public ProtectionExclusions() {
         this.roles = new ObjectOpenHashSet<>();
+        this.permissions = new ObjectOpenHashSet<>();
         this.players = new ObjectOpenHashSet<>();
     }
 
-    private ProtectionExclusions(Collection<String> roles, Collection<UUID> players, boolean includeOperators) {
+    private ProtectionExclusions(Collection<String> roles, Collection<String> permissions, Collection<UUID> players, boolean includeOperators) {
         this.roles = new ObjectOpenHashSet<>(roles);
         this.players = new ObjectOpenHashSet<>(players);
+        this.permissions = new ObjectOpenHashSet<>(permissions);
         this.includeOperators = includeOperators;
     }
 
@@ -63,6 +65,10 @@ public final class ProtectionExclusions {
         return this.roles.remove(role);
     }
 
+    public boolean addPermission(String permission) { return this.permissions.add(permission); }
+
+    public boolean removePermission(String permission) { return this.permissions.remove(permission); }
+
     public boolean addPlayer(GameProfile profile) {
         return this.players.add(profile.getId());
     }
@@ -86,12 +92,18 @@ public final class ProtectionExclusions {
                     return true;
                 }
             }
+
+            for (var excludePermission : this.permissions) {
+                if (PermissionAccessor.INSTANCE.hasPermission(serverPlayer, excludePermission)) {
+                    return true;
+                }
+            }
         }
 
         return false;
     }
 
     public ProtectionExclusions copy() {
-        return new ProtectionExclusions(this.roles, this.players, this.includeOperators);
+        return new ProtectionExclusions(this.roles, this.permissions, this.players, this.includeOperators);
     }
 }
