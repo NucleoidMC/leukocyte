@@ -14,6 +14,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
+import xyz.nucleoid.leukocyte.roles.PermissionAccessor;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.leukocyte.shape.ShapeBuilder;
 
@@ -37,7 +38,7 @@ public final class ShapeCommand {
         // @formatter:off
         dispatcher.register(
             literal("protect")
-                .requires(source -> source.hasPermissionLevel(4))
+                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", 4))
                 .then(literal("shape")
                     .then(literal("start").executes(ShapeCommand::startShape))
                     .then(literal("stop").executes(ShapeCommand::stopShape))

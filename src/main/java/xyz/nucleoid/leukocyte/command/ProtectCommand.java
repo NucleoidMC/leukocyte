@@ -21,6 +21,7 @@ import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRuleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RoleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RuleResultArgument;
+import xyz.nucleoid.leukocyte.roles.PermissionAccessor;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
@@ -41,7 +42,7 @@ public final class ProtectCommand {
         // @formatter:off
         dispatcher.register(
             literal("protect")
-                .requires(source -> source.hasPermissionLevel(4))
+                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", 4))
                 .then(literal("add")
                     .then(argument("authority", StringArgumentType.string())
                     .executes(ProtectCommand::addAuthority)
