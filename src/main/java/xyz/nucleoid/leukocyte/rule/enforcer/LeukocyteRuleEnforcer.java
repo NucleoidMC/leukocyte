@@ -70,6 +70,11 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
                     return (player, source, amount) -> source == DamageSource.FREEZE ? rule : ActionResult.PASS;
                 });
 
+        this.forRule(events, rules.test(ProtectionRule.LAVA_DAMAGE))
+                .applySimple(PlayerDamageEvent.EVENT, rule -> {
+                    return (player, source, amount) -> source == DamageSource.LAVA ? rule : ActionResult.PASS;
+                });
+
         this.forRule(events, rules.test(ProtectionRule.DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
                     return (player, source, amount) -> !source.isOutOfWorld() ? rule : ActionResult.PASS;
