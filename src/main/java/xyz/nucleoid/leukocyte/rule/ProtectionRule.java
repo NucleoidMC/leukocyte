@@ -25,6 +25,7 @@ public final class ProtectionRule {
 
     public static final ProtectionRule PORTALS = register("portals");
     public static final ProtectionRule CRAFTING = register("crafting");
+    public static final ProtectionRule REGENERATION = register("regeneration");
     public static final ProtectionRule HUNGER = register("hunger");
     public static final ProtectionRule FALL_DAMAGE = register("fall_damage");
     public static final ProtectionRule FIRE_DAMAGE = register("fire_damage");
