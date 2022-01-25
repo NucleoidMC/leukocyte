@@ -29,6 +29,7 @@ public final class ProtectionRule {
     public static final ProtectionRule FALL_DAMAGE = register("fall_damage");
     public static final ProtectionRule FIRE_DAMAGE = register("fire_damage");
     public static final ProtectionRule FREEZING_DAMAGE = register("freezing_damage");
+    public static final ProtectionRule LAVA_DAMAGE = register("lava_damage");
     public static final ProtectionRule DAMAGE = register("damage");
 
     public static final ProtectionRule THROW_ITEMS = register("throw_items");
