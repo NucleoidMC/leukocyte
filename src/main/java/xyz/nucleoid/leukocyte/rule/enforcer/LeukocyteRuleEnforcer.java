@@ -26,6 +26,7 @@ import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerAttackEntityEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerConsumeHungerEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
+import xyz.nucleoid.stimuli.event.player.PlayerRegenerateEvent;
 import xyz.nucleoid.stimuli.event.world.*;
 
 import java.util.ArrayList;
@@ -51,6 +52,9 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.CRAFTING))
                 .applySimple(ItemCraftEvent.EVENT, rule -> (player, recipe) -> rule);
+
+        this.forRule(events, rules.test(ProtectionRule.REGENERATION))
+                .applySimple(PlayerRegenerateEvent.EVENT, rule -> (player, amount) -> rule);
 
         this.forRule(events, rules.test(ProtectionRule.HUNGER))
                 .applySimple(PlayerConsumeHungerEvent.EVENT, rule -> (player, foodLevel, saturation, exhaustion) -> rule);
