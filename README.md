@@ -35,6 +35,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `fire_tick` controls whether fire tick is enabled within the authority. Defaults to gamerule if not set
  - `fluid_flow` controls whether fluids flow
  - `ice_melt` controls whether ice and frosted ice melt
+ - `snow_fall` controls whether snow can form on surfaces during snowfall
  
 To set a rule as `allow` or `deny` on an authority, use `/protect set rule <authority> <rule> <result>`.  
 

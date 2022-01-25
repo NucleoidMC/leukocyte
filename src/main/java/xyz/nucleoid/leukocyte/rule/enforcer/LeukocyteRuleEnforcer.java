@@ -166,5 +166,8 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.ICE_MELT))
                 .applySimple(IceMeltEvent.EVENT, rule -> (world, pos) -> rule);
+
+        this.forRule(events, rules.test(ProtectionRule.SNOW_FALL))
+                .applySimple(SnowFallEvent.EVENT, rule -> (world, pos) -> rule);
     }
 }
