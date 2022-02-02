@@ -48,6 +48,8 @@ public final class ProtectionRule {
     public static final ProtectionRule SPAWN_ANIMALS = register("spawn_animals");
     public static final ProtectionRule SPAWN_MONSTERS = register("spawn_monsters");
 
+    public static final ProtectionRule THROW_PROJECTILES = register("throw_projectiles");
+
     public static final ProtectionRule EXPLOSION = register("explosion");
 
     private final String key;

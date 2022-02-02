@@ -8,6 +8,7 @@ import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
@@ -95,6 +96,17 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
         this.forRule(events, rules.test(ProtectionRule.SPAWN_ANIMALS))
                 .applySimple(EntitySpawnEvent.EVENT, rule -> entity -> entity instanceof AnimalEntity ? rule : ActionResult.PASS);
 
+        this.forRule(events, rules.test(ProtectionRule.THROW_PROJECTILES))
+                .applySimple(ItemUseEvent.EVENT, rule -> {
+                    return (player, hand) -> {
+                        ItemStack stack = player.getStackInHand(hand);
+                        if (stack.isOf(Items.EGG) || stack.isOf(Items.SNOWBALL) || stack.isOf(Items.TRIDENT)) {
+                            return TypedActionResult.fail(stack);
+                        }
+
+                        return TypedActionResult.pass(stack);
+                    };
+                });
 
         this.applyWorldRules(rules, events);
     }
