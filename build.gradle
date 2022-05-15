@@ -29,7 +29,7 @@ dependencies {
   modCompileOnly "dev.gegy:player-roles-api:1.4.2"
   modCompileOnly "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
 
-  modRuntime("supercoder79:databreaker:0.2.8") {
+  modRuntime("supercoder79:databreaker:0.2.9") {
     exclude module: "fabric-loader"
   }
 }
