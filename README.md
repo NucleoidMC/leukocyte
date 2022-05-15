@@ -31,6 +31,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `pickup_items` controls whether items can be picked up by players or other entities
  - `unstable_tnt` controls tnt automatically igniting when placed
  - `ignite_tnt` controls whether tnt can be ignited
+ - `dispenser_activate` controls whether dispensers and droppers can be activated
  - `spawn_withers` controls whether withers can be summoned
  - `fire_tick` controls whether fire tick is enabled within the authority. Defaults to gamerule if not set
  - `fluid_flow` controls whether fluids flow
