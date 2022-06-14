@@ -2,7 +2,7 @@ package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -40,7 +40,7 @@ public final class DimensionShape implements ProtectionShape {
 
     @Override
     public MutableText display() {
-        return new LiteralText(this.dimension.getValue().toString()).formatted(Formatting.YELLOW);
+        return Text.literal(this.dimension.getValue().toString()).formatted(Formatting.YELLOW);
     }
 
     @Override

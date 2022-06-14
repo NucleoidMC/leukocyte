@@ -2,7 +2,7 @@ package xyz.nucleoid.leukocyte.rule;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
@@ -58,13 +58,13 @@ public final class ProtectionRuleMap {
     }
 
     public MutableText clickableDisplay(Authority authority) {
-        MutableText text = new LiteralText("");
+        MutableText text = Text.literal("");
 
         for (var entry : this.map.entrySet()) {
             var rule = entry.getKey();
             var result = entry.getValue();
 
-            text = text.append("  ").append(new LiteralText(rule.getKey()).formatted(Formatting.GRAY))
+            text = text.append("  ").append(Text.literal(rule.getKey()).formatted(Formatting.GRAY))
                     .append(" = ").append(result.clickableDisplay(authority, rule))
                     .append("\n");
         }

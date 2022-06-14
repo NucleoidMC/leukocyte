@@ -8,12 +8,12 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 
 public final class ProtectionRuleArgument {
     public static final DynamicCommandExceptionType RULE_DOES_NOT_EXIST = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Rule with key '%s' does not exist!", arg)
+            Text.translatable("Rule with key '%s' does not exist!", arg)
     );
 
     public static RequiredArgumentBuilder<ServerCommandSource, String> argument(String name) {

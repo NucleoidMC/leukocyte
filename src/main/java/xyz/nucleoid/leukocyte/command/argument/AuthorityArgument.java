@@ -8,13 +8,13 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.authority.Authority;
 
 public final class AuthorityArgument {
     public static final DynamicCommandExceptionType AUTHORITY_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Authority with key '%s' was not found!", arg)
+            Text.translatable("Authority with key '%s' was not found!", arg)
     );
 
     public static RequiredArgumentBuilder<ServerCommandSource, String> argument(String name) {
