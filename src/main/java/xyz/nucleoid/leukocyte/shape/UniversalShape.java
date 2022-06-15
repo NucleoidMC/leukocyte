@@ -1,7 +1,7 @@
 package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.stimuli.filter.EventFilter;
@@ -26,7 +26,7 @@ public final class UniversalShape implements ProtectionShape {
 
     @Override
     public MutableText display() {
-        return new LiteralText("Universe").formatted(Formatting.YELLOW);
+        return Text.literal("Universe").formatted(Formatting.YELLOW);
     }
 
     @Override

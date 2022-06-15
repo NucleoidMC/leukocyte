@@ -2,7 +2,7 @@ package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -47,12 +47,12 @@ public final class BoxShape implements ProtectionShape {
 
     @Override
     public MutableText display() {
-        return new LiteralText("[")
+        return Text.literal("[")
                 .append(this.displayPos(this.min).formatted(Formatting.AQUA))
                 .append("; ")
                 .append(this.displayPos(this.max).formatted(Formatting.AQUA))
                 .append("] in ")
-                .append(new LiteralText(this.dimension.getValue().toString()).formatted(Formatting.YELLOW))
+                .append(Text.literal(this.dimension.getValue().toString()).formatted(Formatting.YELLOW))
                 .formatted(Formatting.GRAY);
     }
 
@@ -62,6 +62,6 @@ public final class BoxShape implements ProtectionShape {
     }
 
     private MutableText displayPos(BlockPos pos) {
-        return new LiteralText("(" + pos.getX() + "; " + pos.getY() + "; " + pos.getZ() + ")");
+        return Text.literal("(" + pos.getX() + "; " + pos.getY() + "; " + pos.getZ() + ")");
     }
 }

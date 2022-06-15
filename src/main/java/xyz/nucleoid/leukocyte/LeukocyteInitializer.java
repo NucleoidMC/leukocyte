@@ -1,7 +1,7 @@
 package xyz.nucleoid.leukocyte;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import xyz.nucleoid.leukocyte.command.ProtectCommand;
 import xyz.nucleoid.leukocyte.command.ShapeCommand;
@@ -24,7 +24,7 @@ public final class LeukocyteInitializer implements ModInitializer {
         ServerWorldEvents.LOAD.register((server, world) -> Leukocyte.get(server).onWorldLoad(world));
         ServerWorldEvents.UNLOAD.register((server, world) -> Leukocyte.get(server).onWorldUnload(world));
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             ProtectCommand.register(dispatcher);
             ShapeCommand.register(dispatcher);
         });

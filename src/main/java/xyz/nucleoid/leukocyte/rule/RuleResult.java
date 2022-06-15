@@ -3,7 +3,7 @@ package xyz.nucleoid.leukocyte.rule;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -47,7 +47,7 @@ public enum RuleResult {
     }
 
     public MutableText display() {
-        return new LiteralText(this.key).formatted(this.formatting);
+        return Text.literal(this.key).formatted(this.formatting);
     }
 
     public MutableText clickableDisplay(Authority authority, ProtectionRule rule) {

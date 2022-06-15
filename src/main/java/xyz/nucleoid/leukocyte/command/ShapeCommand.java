@@ -10,7 +10,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
@@ -80,10 +80,10 @@ public final class ShapeCommand {
         var builder = ShapeBuilder.start(player);
         if (builder != null) {
             source.sendFeedback(
-                    new LiteralText("Started building a shape! Use ")
-                            .append(new LiteralText("/protect shape add").formatted(Formatting.GRAY))
+                    Text.literal("Started building a shape! Use ")
+                            .append(Text.literal("/protect shape add").formatted(Formatting.GRAY))
                             .append(" to add primitives to this shape, and ")
-                            .append(new LiteralText("/protect shape finish").formatted(Formatting.GRAY))
+                            .append(Text.literal("/protect shape finish").formatted(Formatting.GRAY))
                             .append(" to add it to an authority."),
                     false
             );
@@ -100,7 +100,7 @@ public final class ShapeCommand {
         var builder = ShapeBuilder.from(player);
         if (builder != null) {
             builder.finish();
-            source.sendFeedback(new LiteralText("Canceled shape building!"), false);
+            source.sendFeedback(Text.literal("Canceled shape building!"), false);
             return Command.SINGLE_SUCCESS;
         } else {
             throw NOT_CURRENTLY_BUILDING.create();
@@ -136,7 +136,7 @@ public final class ShapeCommand {
         var shapeBuilder = ShapeBuilder.from(player);
         if (shapeBuilder != null) {
             shapeBuilder.add(shape);
-            source.sendFeedback(new LiteralText("Added ").append(shape.display()).append(" to current shape!"), false);
+            source.sendFeedback(Text.literal("Added ").append(shape.display()).append(" to current shape!"), false);
         } else {
             throw NOT_CURRENTLY_BUILDING.create();
         }
@@ -158,7 +158,7 @@ public final class ShapeCommand {
             var leukocyte = Leukocyte.get(source.getServer());
             leukocyte.replaceAuthority(authority, authority.addShape(name, shape));
 
-            source.sendFeedback(new LiteralText("Added shape as '" + name + "' to '" + authority.getKey() + "'!"), true);
+            source.sendFeedback(Text.literal("Added shape as '" + name + "' to '" + authority.getKey() + "'!"), true);
 
             return Command.SINGLE_SUCCESS;
         } else {
@@ -180,7 +180,7 @@ public final class ShapeCommand {
         var leukocyte = Leukocyte.get(source.getServer());
         leukocyte.replaceAuthority(authority, newAuthority);
 
-        source.sendFeedback(new LiteralText("Removed shape '" + name + "' from '" + authority.getKey() + "'!"), true);
+        source.sendFeedback(Text.literal("Removed shape '" + name + "' from '" + authority.getKey() + "'!"), true);
 
         return Command.SINGLE_SUCCESS;
     }

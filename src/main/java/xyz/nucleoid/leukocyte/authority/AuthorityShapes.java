@@ -2,9 +2,8 @@ package xyz.nucleoid.leukocyte.authority;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.leukocyte.shape.UnionShape;
@@ -77,12 +76,12 @@ public final class AuthorityShapes {
 
     public Text displayList() {
         if (this.entries.length == 0) {
-            return new LiteralText("Empty\n").formatted(Formatting.YELLOW);
+            return Text.literal("Empty\n").formatted(Formatting.YELLOW);
         }
 
-        MutableText text = new LiteralText("");
+        MutableText text = Text.literal("");
         for (var entry : this.entries) {
-            text = text.append(new LiteralText("  " + entry.name).formatted(Formatting.AQUA))
+            text = text.append(Text.literal("  " + entry.name).formatted(Formatting.AQUA))
                     .append(": ")
                     .append(entry.shape.displayShort())
                     .append("\n");

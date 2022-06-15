@@ -1,5 +1,5 @@
 plugins {
-  id 'fabric-loom' version '0.10-SNAPSHOT'
+  id 'fabric-loom' version '0.12-SNAPSHOT'
   id "com.modrinth.minotaur" version "1.2.1"
 }
 import com.modrinth.minotaur.TaskModrinthUpload
@@ -24,14 +24,15 @@ dependencies {
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-  modImplementation include('xyz.nucleoid:stimuli:0.2.9+1.18.2')
+  modImplementation include('xyz.nucleoid:stimuli:0.2.10+1.19')
 
-  modCompileOnly "dev.gegy:player-roles-api:1.4.2"
+  modCompileOnly "dev.gegy:player-roles-api:1.6.0"
   modCompileOnly "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
 
+  /*
   modRuntime("supercoder79:databreaker:0.2.9") {
     exclude module: "fabric-loader"
-  }
+  }*/ //gradle did not find this
 }
 
 processResources {

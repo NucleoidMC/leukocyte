@@ -1,7 +1,7 @@
 package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
@@ -47,10 +47,10 @@ public final class UnionShape implements ProtectionShape {
         if (this.scopes.length == 1) {
             return this.scopes[0].display();
         } else if (this.scopes.length == 0) {
-            return new LiteralText("()");
+            return Text.literal("()");
         }
 
-        MutableText text = new LiteralText("(");
+        MutableText text = Text.literal("(");
         for (int i = 0; i < this.scopes.length; i++) {
             text = text.append(this.scopes[i].display());
             if (i < this.scopes.length - 1) {
@@ -65,9 +65,9 @@ public final class UnionShape implements ProtectionShape {
         if (this.scopes.length == 1) {
             return this.scopes[0].display();
         } else if (this.scopes.length == 0) {
-            return new LiteralText("()");
+            return Text.literal("()");
         }
-        return new LiteralText(this.scopes.length + " combined shapes");
+        return Text.literal(this.scopes.length + " combined shapes");
     }
 
     @Override
