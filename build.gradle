@@ -1,6 +1,6 @@
 plugins {
   id 'fabric-loom' version '0.12-SNAPSHOT'
-  id "com.modrinth.minotaur" version "1.2.1"
+  id "com.modrinth.minotaur" version "2.+"
 }
 import com.modrinth.minotaur.TaskModrinthUpload
 
@@ -28,11 +28,6 @@ dependencies {
 
   modCompileOnly "dev.gegy:player-roles-api:1.6.0"
   modCompileOnly "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
-
-  /*
-  modRuntime("supercoder79:databreaker:0.2.9") {
-    exclude module: "fabric-loader"
-  }*/ //gradle did not find this
 }
 
 processResources {
@@ -58,21 +53,19 @@ jar {
   }
 }
 
-task publishModrinth (type: TaskModrinthUpload){
-  onlyIf {
-    System.getenv("MODRINTH")
+if (System.getenv("MODRINTH")) {
+  modrinth {
+    token = System.getenv("MODRINTH")
+    projectId = "hsRVgp6Q"
+    versionNumber = version
+    versionType = "release"
+    uploadFile = remapJar
+    changelog = System.getenv("CHANGELOG")
+    gameVersions = [(String) project.minecraft_version]
+    loaders = ["fabric"]
+    dependencies {
+      required.project "fabric-api"
+    }
   }
-
-  token = System.getenv("MODRINTH")
-  projectId = 'hsRVgp6Q'
-  versionNumber = version
-  changelog = System.getenv("CHANGELOG")
-  // On fabric, use 'remapJar' instead of 'jar'
-  uploadFile = remapJar
-  addGameVersion((String) project.minecraft_version)
-  addLoader('fabric')
 }
 
-remapJar {
-  finalizedBy publishModrinth
-}
