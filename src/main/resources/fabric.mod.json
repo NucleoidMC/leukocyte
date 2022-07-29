@@ -15,7 +15,7 @@
     "fabricloader": ">=0.12",
     "fabric": "*",
     "minecraft": ">=1.18",
-    "stimuli": "0.2.x",
+    "stimuli": "0.4.x",
     "java": ">=17"
   }
 }
