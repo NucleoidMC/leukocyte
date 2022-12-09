@@ -2,20 +2,20 @@ package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 public final class BoxShape implements ProtectionShape {
     public static final Codec<BoxShape> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                Identifier.CODEC.xmap(id -> RegistryKey.of(Registry.WORLD_KEY, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension),
+                Identifier.CODEC.xmap(id -> RegistryKey.of(RegistryKeys.WORLD, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension),
                 BlockPos.CODEC.fieldOf("min").forGetter(scope -> scope.min),
                 BlockPos.CODEC.fieldOf("max").forGetter(scope -> scope.max)
         ).apply(instance, BoxShape::new);
