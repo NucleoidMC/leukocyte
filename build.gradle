@@ -1,5 +1,5 @@
 plugins {
-  id 'fabric-loom' version '0.12-SNAPSHOT'
+  id 'fabric-loom' version '1.0.+'
   id "com.modrinth.minotaur" version "2.+"
 }
 import com.modrinth.minotaur.TaskModrinthUpload
@@ -24,10 +24,10 @@ dependencies {
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-  modImplementation include('xyz.nucleoid:stimuli:0.4.1+1.19.1')
+  modImplementation include('xyz.nucleoid:stimuli:0.4.1+1.19.3')
 
-  modCompileOnly "dev.gegy:player-roles-api:1.6.0"
-  modCompileOnly "me.lucko:fabric-permissions-api:0.1-SNAPSHOT"
+  modCompileOnly "dev.gegy:player-roles-api:1.6.2"
+  modCompileOnly "me.lucko:fabric-permissions-api:0.2-SNAPSHOT"
 }
 
 processResources {

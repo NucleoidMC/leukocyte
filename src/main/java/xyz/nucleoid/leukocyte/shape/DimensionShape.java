@@ -2,19 +2,19 @@ package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 public final class DimensionShape implements ProtectionShape {
     public static final Codec<DimensionShape> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                Identifier.CODEC.xmap(id -> RegistryKey.of(Registry.WORLD_KEY, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension)
+                Identifier.CODEC.xmap(id -> RegistryKey.of(RegistryKeys.WORLD, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension)
         ).apply(instance, DimensionShape::new);
     });
 

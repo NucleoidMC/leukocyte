@@ -1,9 +1,9 @@
 package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import xyz.nucleoid.leukocyte.util.StringRegistry;
 import xyz.nucleoid.stimuli.filter.EventFilter;
