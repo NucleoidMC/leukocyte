@@ -20,6 +20,7 @@ import xyz.nucleoid.stimuli.event.block.BlockPlaceEvent;
 import xyz.nucleoid.stimuli.event.block.BlockRandomTickEvent;
 import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
 import xyz.nucleoid.stimuli.event.block.DispenserActivateEvent;
+import xyz.nucleoid.stimuli.event.block.FluidRandomTickEvent;
 import xyz.nucleoid.stimuli.event.entity.EntitySpawnEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityUseEvent;
 import xyz.nucleoid.stimuli.event.item.ItemCraftEvent;
@@ -136,6 +137,9 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.BLOCK_RANDOM_TICK))
                 .applySimple(BlockRandomTickEvent.EVENT, rule -> (world, pos, state) -> rule);
+
+        this.forRule(events, rules.test(ProtectionRule.FLUID_RANDOM_TICK))
+                .applySimple(FluidRandomTickEvent.EVENT, rule -> (world, pos, state) -> rule);
     }
 
     private void applyInteractionRules(ProtectionRuleMap rules, EventRegistrar events) {

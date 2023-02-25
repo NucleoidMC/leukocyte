@@ -39,6 +39,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `snow_fall` controls whether snow can form on surfaces during snowfall
  - `throw_projectiles` controls whether players can throw eggs, snowballs, or tridents
  - `block_random_tick` controls whether random ticks will apply to blocks
+ - `fluid_random_tick` controls whether random ticks will apply to fluids
  
 To set a rule as `allow` or `deny` on an authority, use `/protect set rule <authority> <rule> <result>`.  
 
