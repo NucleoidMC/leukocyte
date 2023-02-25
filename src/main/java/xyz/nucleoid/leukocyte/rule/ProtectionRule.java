@@ -53,6 +53,8 @@ public final class ProtectionRule {
 
     public static final ProtectionRule EXPLOSION = register("explosion");
 
+    public static final ProtectionRule BLOCK_RANDOM_TICK = register("block_random_tick");
+
     private final String key;
 
     ProtectionRule(String key) {
