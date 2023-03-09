@@ -22,6 +22,7 @@ public final class ProtectionRule {
 
     public static final ProtectionRule ATTACK = register("attack");
     public static final ProtectionRule PVP = register("pvp");
+    public static final ProtectionRule SPECTATE_ENTITIES = register("spectate_entities");
 
     public static final ProtectionRule PORTALS = register("portals");
     public static final ProtectionRule CRAFTING = register("crafting");
