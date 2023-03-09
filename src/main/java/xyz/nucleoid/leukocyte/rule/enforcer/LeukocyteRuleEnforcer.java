@@ -166,6 +166,9 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
         this.forRule(events, rules.test(ProtectionRule.IGNITE_TNT))
                 .applySimple(TntIgniteEvent.EVENT, rule -> (world, pos, igniter) -> rule);
 
+        this.forRule(events, rules.test(ProtectionRule.FIREWORK_EXPLODE))
+                .applySimple(FireworkExplodeEvent.EVENT, rule -> firework -> rule);
+
         this.forRule(events, rules.test(ProtectionRule.DISPENSER_ACTIVATE))
                 .applySimple(DispenserActivateEvent.EVENT, rule -> (world, pos, dispenser, slot, stack) -> rule);
 
