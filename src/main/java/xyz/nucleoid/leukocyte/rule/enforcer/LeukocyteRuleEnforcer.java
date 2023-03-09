@@ -18,6 +18,7 @@ import xyz.nucleoid.stimuli.event.block.BlockBreakEvent;
 import xyz.nucleoid.stimuli.event.block.BlockDropItemsEvent;
 import xyz.nucleoid.stimuli.event.block.BlockPlaceEvent;
 import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
+import xyz.nucleoid.stimuli.event.block.CoralDeathEvent;
 import xyz.nucleoid.stimuli.event.block.DispenserActivateEvent;
 import xyz.nucleoid.stimuli.event.entity.EntitySpawnEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityUseEvent;
@@ -188,5 +189,8 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.SNOW_FALL))
                 .applySimple(SnowFallEvent.EVENT, rule -> (world, pos) -> rule);
+
+        this.forRule(events, rules.test(ProtectionRule.CORAL_DEATH))
+                .applySimple(CoralDeathEvent.EVENT, rule -> (world, pos, from, to) -> rule);
     }
 }
