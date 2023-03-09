@@ -51,6 +51,7 @@ public final class ProtectionRule {
     public static final ProtectionRule SPAWN_MONSTERS = register("spawn_monsters");
 
     public static final ProtectionRule THROW_PROJECTILES = register("throw_projectiles");
+    public static final ProtectionRule SHEAR_ENTITIES = register("shear_entities");
 
     public static final ProtectionRule EXPLOSION = register("explosion");
 
