@@ -23,6 +23,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `interact` controls global interaction over blocks and entities
  - `attack` controls whether players can attack other entities
  - `pvp` controls whether players can attack other players
+ - `spectate_entities` controls whether players can spectate entities from the entity's perspective in spectator mode
  - `portals` controls whether players can construct portals
  - `crafting` controls whether players can craft items
  - `fall_damage` controls whether players should receive fall damage
