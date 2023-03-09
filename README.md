@@ -39,6 +39,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `fluid_flow` controls whether fluids flow
  - `ice_melt` controls whether ice and frosted ice melt
  - `snow_fall` controls whether snow can form on surfaces during snowfall
+ - `coral_death` controls whether coral and coral fan blocks can die
  - `throw_projectiles` controls whether players can throw eggs, snowballs, or tridents
  - `shear_entities` controls whether entities such as sheep and mooshrooms can be sheared by players and dispensers
  
