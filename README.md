@@ -39,6 +39,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `ice_melt` controls whether ice and frosted ice melt
  - `snow_fall` controls whether snow can form on surfaces during snowfall
  - `throw_projectiles` controls whether players can throw eggs, snowballs, or tridents
+ - `shear_entities` controls whether entities such as sheep and mooshrooms can be sheared by players and dispensers
  
 To set a rule as `allow` or `deny` on an authority, use `/protect set rule <authority> <rule> <result>`.  
 
