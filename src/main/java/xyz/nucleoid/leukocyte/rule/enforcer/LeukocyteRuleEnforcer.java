@@ -3,12 +3,13 @@ package xyz.nucleoid.leukocyte.rule.enforcer;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.TntBlock;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
@@ -19,8 +20,10 @@ import xyz.nucleoid.stimuli.event.block.BlockDropItemsEvent;
 import xyz.nucleoid.stimuli.event.block.BlockPlaceEvent;
 import xyz.nucleoid.stimuli.event.block.BlockRandomTickEvent;
 import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
+import xyz.nucleoid.stimuli.event.block.CoralDeathEvent;
 import xyz.nucleoid.stimuli.event.block.DispenserActivateEvent;
 import xyz.nucleoid.stimuli.event.block.FluidRandomTickEvent;
+import xyz.nucleoid.stimuli.event.entity.EntityShearEvent;
 import xyz.nucleoid.stimuli.event.entity.EntitySpawnEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityUseEvent;
 import xyz.nucleoid.stimuli.event.item.ItemCraftEvent;
@@ -31,6 +34,7 @@ import xyz.nucleoid.stimuli.event.player.PlayerAttackEntityEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerConsumeHungerEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerRegenerateEvent;
+import xyz.nucleoid.stimuli.event.player.PlayerSpectateEntityEvent;
 import xyz.nucleoid.stimuli.event.world.*;
 
 import java.util.ArrayList;
@@ -54,6 +58,9 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
                     return attacked instanceof PlayerEntity ? rule : ActionResult.PASS;
                 });
 
+        this.forRule(events, rules.test(ProtectionRule.SPECTATE_ENTITIES))
+                .applySimple(PlayerSpectateEntityEvent.EVENT, rule -> (player, target) -> rule);
+
         this.forRule(events, rules.test(ProtectionRule.CRAFTING))
                 .applySimple(ItemCraftEvent.EVENT, rule -> (player, recipe) -> rule);
 
@@ -65,27 +72,27 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.FALL_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source == DamageSource.FALL ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FALL) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.FIRE_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source == DamageSource.IN_FIRE || source == DamageSource.ON_FIRE ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FIRE) && !source.isOf(DamageTypes.LAVA) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.FREEZING_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source == DamageSource.FREEZE ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FREEZING) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.LAVA_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source == DamageSource.LAVA ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> source.isOf(DamageTypes.LAVA) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> !source.isOutOfWorld() ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> !source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.THROW_ITEMS))
@@ -110,6 +117,9 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
                         return TypedActionResult.pass(stack);
                     };
                 });
+
+        this.forRule(events, rules.test(ProtectionRule.SHEAR_ENTITIES))
+                .applySimple(EntityShearEvent.EVENT, rule -> (entity, player, hand, pos) -> rule);
 
         this.applyWorldRules(rules, events);
     }
@@ -174,6 +184,9 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
         this.forRule(events, rules.test(ProtectionRule.IGNITE_TNT))
                 .applySimple(TntIgniteEvent.EVENT, rule -> (world, pos, igniter) -> rule);
 
+        this.forRule(events, rules.test(ProtectionRule.FIREWORK_EXPLODE))
+                .applySimple(FireworkExplodeEvent.EVENT, rule -> firework -> rule);
+
         this.forRule(events, rules.test(ProtectionRule.DISPENSER_ACTIVATE))
                 .applySimple(DispenserActivateEvent.EVENT, rule -> (world, pos, dispenser, slot, stack) -> rule);
 
@@ -193,5 +206,8 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.SNOW_FALL))
                 .applySimple(SnowFallEvent.EVENT, rule -> (world, pos) -> rule);
+
+        this.forRule(events, rules.test(ProtectionRule.CORAL_DEATH))
+                .applySimple(CoralDeathEvent.EVENT, rule -> (world, pos, from, to) -> rule);
     }
 }
