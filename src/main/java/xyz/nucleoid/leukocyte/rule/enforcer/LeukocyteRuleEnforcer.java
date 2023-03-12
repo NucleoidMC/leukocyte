@@ -3,12 +3,13 @@ package xyz.nucleoid.leukocyte.rule.enforcer;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.TntBlock;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
@@ -64,27 +65,27 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.FALL_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source == DamageSource.FALL ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FALL) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.FIRE_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source == DamageSource.IN_FIRE || source == DamageSource.ON_FIRE ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FIRE) && !source.isOf(DamageTypes.LAVA) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.FREEZING_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source == DamageSource.FREEZE ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FREEZING) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.LAVA_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source == DamageSource.LAVA ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> source.isOf(DamageTypes.LAVA) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> !source.isOutOfWorld() ? rule : ActionResult.PASS;
+                    return (player, source, amount) -> !source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) ? rule : ActionResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.THROW_ITEMS))

@@ -38,7 +38,7 @@ public final class StringRegistry<T> implements Codec<T>, Iterable<T> {
         return Codec.STRING.decode(ops, input)
                 .flatMap(pair -> {
                     if (!this.containsKey(pair.getFirst())) {
-                        return DataResult.error("Unknown registry key: " + pair.getFirst());
+                        return DataResult.error(() -> "Unknown registry key: " + pair.getFirst());
                     }
                     return DataResult.success(pair.mapFirst(this::get));
                 });
@@ -48,7 +48,7 @@ public final class StringRegistry<T> implements Codec<T>, Iterable<T> {
     public <U> DataResult<U> encode(T input, DynamicOps<U> ops, U prefix) {
         var identifier = this.getIdentifier(input);
         if (identifier == null) {
-            return DataResult.error("Unknown registry element " + input);
+            return DataResult.error(() -> "Unknown registry element " + input);
         }
         return ops.mergeToPrimitive(prefix, ops.createString(identifier));
     }
