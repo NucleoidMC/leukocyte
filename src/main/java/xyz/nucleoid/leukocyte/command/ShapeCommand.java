@@ -80,7 +80,7 @@ public final class ShapeCommand {
         var builder = ShapeBuilder.start(player);
         if (builder != null) {
             source.sendFeedback(
-                    Text.literal("Started building a shape! Use ")
+                    () -> Text.literal("Started building a shape! Use ")
                             .append(Text.literal("/protect shape add").formatted(Formatting.GRAY))
                             .append(" to add primitives to this shape, and ")
                             .append(Text.literal("/protect shape finish").formatted(Formatting.GRAY))
@@ -100,7 +100,7 @@ public final class ShapeCommand {
         var builder = ShapeBuilder.from(player);
         if (builder != null) {
             builder.finish();
-            source.sendFeedback(Text.literal("Canceled shape building!"), false);
+            source.sendFeedback(() -> Text.literal("Canceled shape building!"), false);
             return Command.SINGLE_SUCCESS;
         } else {
             throw NOT_CURRENTLY_BUILDING.create();
@@ -136,7 +136,7 @@ public final class ShapeCommand {
         var shapeBuilder = ShapeBuilder.from(player);
         if (shapeBuilder != null) {
             shapeBuilder.add(shape);
-            source.sendFeedback(Text.literal("Added ").append(shape.display()).append(" to current shape!"), false);
+            source.sendFeedback(() -> Text.literal("Added ").append(shape.display()).append(" to current shape!"), false);
         } else {
             throw NOT_CURRENTLY_BUILDING.create();
         }
@@ -158,7 +158,7 @@ public final class ShapeCommand {
             var leukocyte = Leukocyte.get(source.getServer());
             leukocyte.replaceAuthority(authority, authority.addShape(name, shape));
 
-            source.sendFeedback(Text.literal("Added shape as '" + name + "' to '" + authority.getKey() + "'!"), true);
+            source.sendFeedback(() -> Text.literal("Added shape as '" + name + "' to '" + authority.getKey() + "'!"), true);
 
             return Command.SINGLE_SUCCESS;
         } else {
@@ -180,7 +180,7 @@ public final class ShapeCommand {
         var leukocyte = Leukocyte.get(source.getServer());
         leukocyte.replaceAuthority(authority, newAuthority);
 
-        source.sendFeedback(Text.literal("Removed shape '" + name + "' from '" + authority.getKey() + "'!"), true);
+        source.sendFeedback(() -> Text.literal("Removed shape '" + name + "' from '" + authority.getKey() + "'!"), true);
 
         return Command.SINGLE_SUCCESS;
     }

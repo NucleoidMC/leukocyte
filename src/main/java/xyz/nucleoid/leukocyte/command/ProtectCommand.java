@@ -162,13 +162,13 @@ public final class ProtectCommand {
         if (leukocyte.addAuthority(authority)) {
             var shapes = authority.getShapes();
             if (shapes.isEmpty()) {
-                source.sendFeedback(Text.literal("Added empty authority as '" + key + "'"), true);
+                source.sendFeedback(() -> Text.literal("Added empty authority as '" + key + "'"), true);
             } else {
-                source.sendFeedback(Text.literal("Added authority as '" + key + "' with ").append(shapes.displayShort()), true);
+                source.sendFeedback(() -> Text.literal("Added authority as '" + key + "' with ").append(shapes.displayShort()), true);
             }
 
             source.sendFeedback(
-                    Text.literal("Run ")
+                    () -> Text.literal("Run ")
                             .append(Text.literal("/protect shape start").formatted(Formatting.GRAY))
                             .append(" to include additional shapes in this authority, and ")
                             .append(Text.literal("/protect set rule " + key + " <rule> <allow|deny>").formatted(Formatting.GRAY))
@@ -188,7 +188,7 @@ public final class ProtectCommand {
         var leukocyte = Leukocyte.get(context.getSource().getServer());
         leukocyte.removeAuthority(authority.getKey());
 
-        context.getSource().sendFeedback(Text.literal("Removed authority " + authority.getKey()), true);
+        context.getSource().sendFeedback(() -> Text.literal("Removed authority " + authority.getKey()), true);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -203,7 +203,7 @@ public final class ProtectCommand {
         var newAuthority = authority.withRule(rule, result);
         leukocyte.replaceAuthority(authority, newAuthority);
 
-        context.getSource().sendFeedback(Text.literal("Set rule " + rule.getKey() + " = " + result.getKey() + " for " + authority.getKey()), true);
+        context.getSource().sendFeedback(() -> Text.literal("Set rule " + rule.getKey() + " = " + result.getKey() + " for " + authority.getKey()), true);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -217,7 +217,7 @@ public final class ProtectCommand {
         var newAuthority = authority.withLevel(level);
         leukocyte.replaceAuthority(authority, newAuthority);
 
-        context.getSource().sendFeedback(Text.literal("Changed level of " + authority.getKey() + " from " + authority.getLevel() + " to " + level), true);
+        context.getSource().sendFeedback(() -> Text.literal("Changed level of " + authority.getKey() + " from " + authority.getLevel() + " to " + level), true);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -226,14 +226,13 @@ public final class ProtectCommand {
         var authority = AuthorityArgument.get(context, "authority");
         var players = GameProfileArgumentType.getProfileArgument(context, "player");
 
-        int count = 0;
-        for (var player : players) {
-            if (authority.getExclusions().addPlayer(player)) {
-                count++;
-            }
-        }
+        var exclusions = authority.getExclusions();
 
-        context.getSource().sendFeedback(Text.literal("Added " + count + " player exclusions to " + authority.getKey()), true);
+        int count = (int) players.stream()
+                .filter(exclusions::addPlayer)
+                .count();
+
+        context.getSource().sendFeedback(() -> Text.literal("Added " + count + " player exclusions to " + authority.getKey()), true);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -242,14 +241,13 @@ public final class ProtectCommand {
         var authority = AuthorityArgument.get(context, "authority");
         var players = GameProfileArgumentType.getProfileArgument(context, "player");
 
-        int count = 0;
-        for (var player : players) {
-            if (authority.getExclusions().removePlayer(player)) {
-                count++;
-            }
-        }
+        var exclusions = authority.getExclusions();
 
-        context.getSource().sendFeedback(Text.literal("Removed " + count + " player exclusions from " + authority.getKey()), true);
+        int count = (int) players.stream()
+                .filter(exclusions::removePlayer)
+                .count();
+
+        context.getSource().sendFeedback(() -> Text.literal("Removed " + count + " player exclusions from " + authority.getKey()), true);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -259,7 +257,7 @@ public final class ProtectCommand {
         var role = RoleArgument.get(context, "role");
 
         if (authority.getExclusions().addRole(role)) {
-            context.getSource().sendFeedback(Text.literal("Added '" + role + "' exclusion to " + authority.getKey()), true);
+            context.getSource().sendFeedback(() -> Text.literal("Added '" + role + "' exclusion to " + authority.getKey()), true);
         } else {
             context.getSource().sendError(Text.literal("'" + role + "' is already excluded"));
         }
@@ -272,7 +270,7 @@ public final class ProtectCommand {
         var role = RoleArgument.get(context, "role");
 
         if (authority.getExclusions().removeRole(role)) {
-            context.getSource().sendFeedback(Text.literal("Removed '" + role + "' exclusion from " + authority.getKey()), true);
+            context.getSource().sendFeedback(() -> Text.literal("Removed '" + role + "' exclusion from " + authority.getKey()), true);
         } else {
             context.getSource().sendError(Text.literal("'" + role + "' is not excluded"));
         }
@@ -285,7 +283,7 @@ public final class ProtectCommand {
         var permission = StringArgumentType.getString(context, "permission");
 
         if (authority.getExclusions().addPermission(permission)) {
-            context.getSource().sendFeedback(Text.literal("Added '" + permission + "' exclusion to " + authority.getKey()), true);
+            context.getSource().sendFeedback(() -> Text.literal("Added '" + permission + "' exclusion to " + authority.getKey()), true);
         } else {
             context.getSource().sendError(Text.literal("'" + permission + "' is already excluded"));
         }
@@ -298,7 +296,7 @@ public final class ProtectCommand {
         var permission = StringArgumentType.getString(context, "permission");
 
         if (authority.getExclusions().removePermission(permission)) {
-            context.getSource().sendFeedback(Text.literal("Removed '" + permission + "' exclusion from " + authority.getKey()), true);
+            context.getSource().sendFeedback(() -> Text.literal("Removed '" + permission + "' exclusion from " + authority.getKey()), true);
         } else {
             context.getSource().sendError(Text.literal("'" + permission + "' is not excluded"));
         }
@@ -315,14 +313,16 @@ public final class ProtectCommand {
             return Command.SINGLE_SUCCESS;
         }
 
-        MutableText text = Text.literal("Listing " + authorities.size() + " registered authorities:\n");
-        for (var authority : authorities) {
-            text = text.append("  ").append(Text.literal(authority.getKey()).formatted(Formatting.AQUA)).append("@" + authority.getLevel() + ": ")
-                    .append(authority.getShapes().displayShort())
-                    .append("\n");
-        }
+        context.getSource().sendFeedback(() -> {
+            MutableText text = Text.literal("Listing " + authorities.size() + " registered authorities:\n");
+            for (var authority : authorities) {
+                text = text.append("  ").append(Text.literal(authority.getKey()).formatted(Formatting.AQUA)).append("@" + authority.getLevel() + ": ")
+                        .append(authority.getShapes().displayShort())
+                        .append("\n");
+            }
 
-        context.getSource().sendFeedback(text, false);
+            return text;
+        }, false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -347,35 +347,37 @@ public final class ProtectCommand {
             return Command.SINGLE_SUCCESS;
         }
 
-        MutableText text = Text.literal("Testing applicable rules at your current location:\n");
+        source.sendFeedback(() -> {
+            MutableText text = Text.literal("Testing applicable rules at your current location:\n");
 
-        text = text.append(" from authorities: ");
-        for (int i = 0; i < authorities.size(); i++) {
-            var tail = i < authorities.size() - 1 ? ", " : "\n\n";
+            text = text.append(" from authorities: ");
+            for (int i = 0; i < authorities.size(); i++) {
+                var tail = i < authorities.size() - 1 ? ", " : "\n\n";
 
-            var authority = authorities.get(i);
-            text.append(Text.literal(authority.getKey()).formatted(Formatting.AQUA)).append(tail);
-        }
+                var authority = authorities.get(i);
+                text.append(Text.literal(authority.getKey()).formatted(Formatting.AQUA)).append(tail);
+            }
 
-        boolean empty = true;
-        for (var rule : ProtectionRule.REGISTRY) {
-            for (var authority : authorities) {
-                var result = authority.getRules().test(rule);
-                if (result != RuleResult.PASS) {
-                    text = text.append("  ").append(Text.literal(rule.getKey()).formatted(Formatting.AQUA))
-                            .append(" = ").append(Text.literal(result.getKey()).formatted(result.getFormatting()))
-                            .append(" (" + authority.getKey() + ")\n");
-                    empty = false;
-                    break;
+            boolean empty = true;
+            for (var rule : ProtectionRule.REGISTRY) {
+                for (var authority : authorities) {
+                    var result = authority.getRules().test(rule);
+                    if (result != RuleResult.PASS) {
+                        text = text.append("  ").append(Text.literal(rule.getKey()).formatted(Formatting.AQUA))
+                                .append(" = ").append(Text.literal(result.getKey()).formatted(result.getFormatting()))
+                                .append(" (" + authority.getKey() + ")\n");
+                        empty = false;
+                        break;
+                    }
                 }
             }
-        }
 
-        if (empty) {
-            text = text.append("  No rules applied!");
-        }
+            if (empty) {
+                text = text.append("  No rules applied!");
+            }
 
-        source.sendFeedback(text, false);
+            return text;
+        }, false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -383,16 +385,18 @@ public final class ProtectCommand {
     private static int displayAuthority(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
 
-        MutableText text = Text.literal("Information for '" + authority.getKey() + "':\n");
-        text = text.append(" Level: ").append(Text.literal(String.valueOf(authority.getLevel())).formatted(Formatting.AQUA)).append("\n");
-        text = text.append(" Shapes:\n").append(authority.getShapes().displayList());
+        context.getSource().sendFeedback(() -> {
+            MutableText text = Text.literal("Information for '" + authority.getKey() + "':\n");
+            text = text.append(" Level: ").append(Text.literal(String.valueOf(authority.getLevel())).formatted(Formatting.AQUA)).append("\n");
+            text = text.append(" Shapes:\n").append(authority.getShapes().displayList());
 
-        var rules = authority.getRules();
-        if (!rules.isEmpty()) {
-            text.append(" Rules:\n").append(rules.clickableDisplay(authority));
-        }
+            var rules = authority.getRules();
+            if (!rules.isEmpty()) {
+                text.append(" Rules:\n").append(rules.clickableDisplay(authority));
+            }
 
-        context.getSource().sendFeedback(text, false);
+            return text;
+        }, false);
 
         return Command.SINGLE_SUCCESS;
     }
