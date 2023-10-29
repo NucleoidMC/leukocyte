@@ -26,6 +26,7 @@ public final class Leukocyte extends PersistentState {
     public static final String ID = "leukocyte";
 
     private static final List<ProtectionRuleEnforcer> RULE_ENFORCERS = new ArrayList<>();
+    private static final Type<Leukocyte> TYPE = new Type<>(Leukocyte::new, Leukocyte::readNbt, null);
 
     private final IndexedAuthorityMap authorities = new IndexedAuthorityMap();
 
@@ -34,7 +35,7 @@ public final class Leukocyte extends PersistentState {
 
     public static Leukocyte get(MinecraftServer server) {
         var state = server.getOverworld().getPersistentStateManager();
-        return state.getOrCreate(Leukocyte::readNbt, Leukocyte::new, ID);
+        return state.getOrCreate(TYPE, ID);
     }
 
     public static void registerRuleEnforcer(ProtectionRuleEnforcer enforcer) {
