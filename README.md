@@ -30,6 +30,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `hunger` controls whether players will become hungry
  - `throw_items` controls whether players can throw items from their inventory
  - `pickup_items` controls whether items can be picked up by players or other entities
+ - `modify_containers` controls whether players can interact with slots and buttons in containers or other handled screens
  - `unstable_tnt` controls tnt automatically igniting when placed
  - `ignite_tnt` controls whether tnt can be ignited
  - `firework_explode` controls whether fireworks can explode instead of only fizzling out
