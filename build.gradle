@@ -25,7 +25,7 @@ dependencies {
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-  modImplementation include('xyz.nucleoid:stimuli:0.4.9+1.20.2')
+  modImplementation include('xyz.nucleoid:stimuli:0.4.10+1.20.4')
 
   modCompileOnly "dev.gegy:player-roles-api:1.6.7"
   modCompileOnly "me.lucko:fabric-permissions-api:0.2-SNAPSHOT"
