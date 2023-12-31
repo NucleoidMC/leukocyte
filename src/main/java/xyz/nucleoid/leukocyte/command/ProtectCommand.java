@@ -10,11 +10,16 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.DimensionArgumentType;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.GameProfileArgumentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+import net.minecraft.text.Texts;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
@@ -120,7 +125,10 @@ public final class ProtectCommand {
                     .executes(ProtectCommand::displayAuthority)
                 ))
                 .then(literal("list").executes(ProtectCommand::listAuthorities))
-                .then(literal("test").executes(ProtectCommand::testRulesHere))
+                .then(literal("test")
+                    .executes(ProtectCommand::testRulesAtSource)
+                        .then(argument("entity", EntityArgumentType.entity())
+                        .executes(ProtectCommand::testRulesForEntity)))
         );
         // @formatter:on
     }
@@ -327,28 +335,62 @@ public final class ProtectCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int testRulesHere(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int testRulesAtSource(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return testRules(context, null);
+    }
+
+    private static int testRulesForEntity(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        var entity = EntityArgumentType.getEntity(context, "entity");
+        return testRules(context, entity);
+    }
+
+    private static int testRules(CommandContext<ServerCommandSource> context, Entity entity) throws CommandSyntaxException {
         var source = context.getSource();
-        var player = source.getPlayer();
+
+        var world = source.getWorld();
+        var pos = BlockPos.ofFloored(source.getPosition());
 
         var leukocyte = Leukocyte.get(source.getServer());
 
         var authorities = new ArrayList<Authority>();
 
-        var eventSource = EventSource.forEntity(player);
-        for (var authority : leukocyte.getAuthorities()) {
-            if (authority.getEventFilter().accepts(eventSource)) {
-                authorities.add(authority);
+        try (var eventSource = entity == null ? EventSource.at(world, pos) : EventSource.forEntityAt(entity, pos)) {
+            for (var authority : leukocyte.getAuthorities()) {
+                if (authority.getEventFilter().accepts(eventSource)) {
+                    authorities.add(authority);
+                }
             }
         }
 
         if (authorities.isEmpty()) {
-            source.sendError(Text.literal("There are no authorities that apply to you at your current location!"));
+            MutableText error = Text.literal("There are no authorities that apply ");
+
+            if (entity != null) {
+                error = error.append("to ");
+                error = error.append(entity.getDisplayName());
+                error = error.append(ScreenTexts.SPACE);
+            }
+
+            error = error.append("at ");
+            error = error.append(Texts.bracketed(Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())));
+            error = error.append("!");
+
+            source.sendError(error);
             return Command.SINGLE_SUCCESS;
         }
 
         source.sendFeedback(() -> {
-            MutableText text = Text.literal("Testing applicable rules at your current location:\n");
+            MutableText text = Text.literal("Testing applicable rules ");
+
+            if (entity != null) {
+                text = text.append("for ");
+                text = text.append(entity.getDisplayName());
+                text = text.append(ScreenTexts.SPACE);
+            }
+
+            text = text.append("at ");
+            text = text.append(Texts.bracketed(Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())));
+            text = text.append(":\n");
 
             text = text.append(" from authorities: ");
             for (int i = 0; i < authorities.size(); i++) {
