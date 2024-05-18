@@ -1,6 +1,7 @@
 package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.math.BlockPos;
@@ -11,10 +12,10 @@ import xyz.nucleoid.stimuli.filter.EventFilter;
 import java.util.function.Function;
 
 public interface ProtectionShape {
-    StringRegistry<Codec<? extends ProtectionShape>> REGISTRY = new StringRegistry<>();
+    StringRegistry<MapCodec<? extends ProtectionShape>> REGISTRY = new StringRegistry<>();
     Codec<ProtectionShape> CODEC = REGISTRY.dispatchStable(ProtectionShape::getCodec, Function.identity());
 
-    static <T extends ProtectionShape> void register(String identifier, Codec<T> codec) {
+    static <T extends ProtectionShape> void register(String identifier, MapCodec<T> codec) {
         REGISTRY.register(identifier, codec);
     }
 
@@ -47,7 +48,7 @@ public interface ProtectionShape {
 
     EventFilter asEventFilter();
 
-    Codec<? extends ProtectionShape> getCodec();
+    MapCodec<? extends ProtectionShape> getCodec();
 
     MutableText display();
 
