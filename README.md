@@ -33,6 +33,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `pickup_items` controls whether items can be picked up by players or other entities
  - `unstable_tnt` controls tnt automatically igniting when placed
  - `ignite_tnt` controls whether tnt can be ignited
+ - `modify_flower_pots` controls whether plants can be placed in or removed from flower pots
  - `firework_explode` controls whether fireworks can explode instead of only fizzling out
  - `dispenser_activate` controls whether dispensers and droppers can be activated
  - `spawn_withers` controls whether withers can be summoned
