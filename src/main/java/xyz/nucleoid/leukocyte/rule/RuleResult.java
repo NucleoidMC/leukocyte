@@ -5,11 +5,11 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.leukocyte.authority.Authority;
+import xyz.nucleoid.stimuli.event.EventResult;
 
 import java.util.Map;
 import java.util.Set;
@@ -77,11 +77,11 @@ public enum RuleResult {
         return this.isDefinitive() ? this : other;
     }
 
-    public ActionResult asActionResult() {
+    public EventResult asEventResult() {
         return switch (this) {
-            case ALLOW -> ActionResult.SUCCESS;
-            case DENY -> ActionResult.FAIL;
-            default -> ActionResult.PASS;
+            case ALLOW -> EventResult.ALLOW;
+            case DENY -> EventResult.DENY;
+            default -> EventResult.PASS;
         };
     }
 
