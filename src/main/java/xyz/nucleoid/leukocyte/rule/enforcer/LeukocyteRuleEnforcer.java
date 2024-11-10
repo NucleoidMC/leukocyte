@@ -24,6 +24,7 @@ import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
 import xyz.nucleoid.stimuli.event.block.CoralDeathEvent;
 import xyz.nucleoid.stimuli.event.block.DispenserActivateEvent;
 import xyz.nucleoid.stimuli.event.block.FluidRandomTickEvent;
+import xyz.nucleoid.stimuli.event.entity.EntityActivateDeathProtectionEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityShearEvent;
 import xyz.nucleoid.stimuli.event.entity.EntitySpawnEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityUseEvent;
@@ -95,6 +96,9 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
                     return (player, source, amount) -> !source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) ? rule : EventResult.PASS;
                 });
+
+        this.forRule(events, rules.test(ProtectionRule.ACTIVATE_DEATH_PROTECTION))
+                .applySimple(EntityActivateDeathProtectionEvent.EVENT, rule -> (player, source, stack) -> rule);
 
         this.forRule(events, rules.test(ProtectionRule.THROW_ITEMS))
                 .applySimple(ItemThrowEvent.EVENT, rule -> (player, slot, stack) -> rule);
