@@ -2,6 +2,7 @@ package xyz.nucleoid.leukocyte.mixin.shape;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.leukocyte.shape.ShapeBuilder;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin implements ShapeBuilder {
+    @Unique
     private List<ProtectionShape> shapes;
 
     @Override
