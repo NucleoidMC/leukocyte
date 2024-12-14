@@ -57,6 +57,7 @@ public final class ProtectionRule {
     public static final ProtectionRule THROW_PROJECTILES = register("throw_projectiles");
     public static final ProtectionRule SHEAR_ENTITIES = register("shear_entities");
 
+    public static final ProtectionRule BLOCK_TRAMPLE = register("block_trample");
     public static final ProtectionRule EXPLOSION = register("explosion");
 
     public static final ProtectionRule BLOCK_RANDOM_TICK = register("block_random_tick");
