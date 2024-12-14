@@ -18,6 +18,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `break` controls whether players can break blocks
  - `place` controls whether players can place blocks
  - `block_drops` controls whether blocks drop items when broken
+ - `block_trample` controls whether blocks like farmland and turtle eggs can be broken
  - `interact_blocks` controls whether players can interact with blocks
  - `interact_entities` controls whether players can interact with entities
  - `interact` controls global interaction over blocks and entities
