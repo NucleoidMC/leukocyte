@@ -1,6 +1,6 @@
 package xyz.nucleoid.leukocyte.shape;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import xyz.nucleoid.stimuli.filter.EventFilter;
@@ -9,10 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class UnionShape implements ProtectionShape {
-    public static final Codec<UnionShape> CODEC = ProtectionShape.CODEC.listOf().xmap(
+    public static final MapCodec<UnionShape> CODEC = ProtectionShape.CODEC.listOf().xmap(
             UnionShape::new,
             union -> Arrays.asList(union.scopes)
-    );
+    ).fieldOf("value");
 
     private final ProtectionShape[] scopes;
     private final EventFilter filter;
@@ -38,7 +38,7 @@ public final class UnionShape implements ProtectionShape {
     }
 
     @Override
-    public Codec<? extends ProtectionShape> getCodec() {
+    public MapCodec<? extends ProtectionShape> getCodec() {
         return CODEC;
     }
 

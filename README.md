@@ -28,10 +28,12 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `crafting` controls whether players can craft items
  - `fall_damage` controls whether players should receive fall damage
  - `hunger` controls whether players will become hungry
+ - `activate_death_protection` controls whether entities should activate death protection items such as totems of undying to avoid dying
  - `throw_items` controls whether players can throw items from their inventory
  - `pickup_items` controls whether items can be picked up by players or other entities
  - `unstable_tnt` controls tnt automatically igniting when placed
  - `ignite_tnt` controls whether tnt can be ignited
+ - `modify_flower_pots` controls whether plants can be placed in or removed from flower pots
  - `firework_explode` controls whether fireworks can explode instead of only fizzling out
  - `dispenser_activate` controls whether dispensers and droppers can be activated
  - `spawn_withers` controls whether withers can be summoned

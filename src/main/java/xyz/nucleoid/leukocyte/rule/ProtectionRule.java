@@ -33,12 +33,14 @@ public final class ProtectionRule {
     public static final ProtectionRule FREEZING_DAMAGE = register("freezing_damage");
     public static final ProtectionRule LAVA_DAMAGE = register("lava_damage");
     public static final ProtectionRule DAMAGE = register("damage");
+    public static final ProtectionRule ACTIVATE_DEATH_PROTECTION = register("activate_death_protection");
 
     public static final ProtectionRule THROW_ITEMS = register("throw_items");
     public static final ProtectionRule PICKUP_ITEMS = register("pickup_items");
 
     public static final ProtectionRule UNSTABLE_TNT = register("unstable_tnt");
     public static final ProtectionRule IGNITE_TNT = register("ignite_tnt");
+    public static final ProtectionRule MODIFY_FLOWER_POTS = register("modify_flower_pots");
     public static final ProtectionRule FIREWORK_EXPLODE = register("firework_explode");
     public static final ProtectionRule DISPENSER_ACTIVATE = register("dispenser_activate");
     public static final ProtectionRule SPAWN_WITHER = register("spawn_wither");
