@@ -1,15 +1,12 @@
 package xyz.nucleoid.leukocyte;
 
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateType;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.leukocyte.authority.Authority;
@@ -26,17 +23,28 @@ import java.util.List;
 public final class Leukocyte extends PersistentState {
     public static final String ID = "leukocyte";
 
-    private static final List<ProtectionRuleEnforcer> RULE_ENFORCERS = new ArrayList<>();
-    private static final Type<Leukocyte> TYPE = new Type<>(Leukocyte::new, Leukocyte::readNbt, null);
+    public static final Codec<Leukocyte> CODEC = RecordCodecBuilder.create(instance -> {
+        return instance.group(
+                IndexedAuthorityMap.CODEC.fieldOf("authorities").forGetter(leukocyte -> leukocyte.authorities)
+        ).apply(instance, Leukocyte::new);
+    });
 
-    private final IndexedAuthorityMap authorities = new IndexedAuthorityMap();
+    private static final List<ProtectionRuleEnforcer> RULE_ENFORCERS = new ArrayList<>();
+    private static final PersistentStateType<Leukocyte> TYPE = new PersistentStateType<>(ID, Leukocyte::new, CODEC, null);
+
+    private final IndexedAuthorityMap authorities;
+
+    private Leukocyte(IndexedAuthorityMap authorities) {
+        this.authorities = authorities;
+    }
 
     private Leukocyte() {
+        this(new IndexedAuthorityMap());
     }
 
     public static Leukocyte get(MinecraftServer server) {
         var state = server.getOverworld().getPersistentStateManager();
-        return state.getOrCreate(TYPE, ID);
+        return state.getOrCreate(TYPE);
     }
 
     public static void registerRuleEnforcer(ProtectionRuleEnforcer enforcer) {
@@ -91,34 +99,5 @@ public final class Leukocyte extends PersistentState {
 
     public AuthorityMap getAuthorities() {
         return this.authorities;
-    }
-
-    @Override
-    public NbtCompound writeNbt(NbtCompound root, RegistryWrapper.WrapperLookup registryLookup) {
-        var authorityList = new NbtList();
-
-        for (var authority : this.authorities) {
-            var result = Authority.CODEC.encodeStart(NbtOps.INSTANCE, authority);
-            result.result().ifPresent(authorityList::add);
-        }
-
-        root.put("authorities", authorityList);
-
-        return root;
-    }
-
-    private static Leukocyte readNbt(NbtCompound root, RegistryWrapper.WrapperLookup registryLookup) {
-        var leukocyte = new Leukocyte();
-
-        var authoritiesList = root.getList("authorities", NbtElement.COMPOUND_TYPE);
-
-        for (var authorityTag : authoritiesList) {
-            Authority.CODEC.decode(NbtOps.INSTANCE, authorityTag)
-                    .map(Pair::getFirst)
-                    .result()
-                    .ifPresent(leukocyte::addAuthority);
-        }
-
-        return leukocyte;
     }
 }

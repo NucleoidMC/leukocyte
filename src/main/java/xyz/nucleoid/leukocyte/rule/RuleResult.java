@@ -56,7 +56,7 @@ public enum RuleResult {
         }
 
         var command = "/protect set rule " + authority.getKey() + " " + rule.getKey() + " " + this.getOpposite().key;
-        var clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command);
+        var clickEvent = new ClickEvent.SuggestCommand(command);
 
         return this.display().styled(style -> style.withClickEvent(clickEvent));
     }
