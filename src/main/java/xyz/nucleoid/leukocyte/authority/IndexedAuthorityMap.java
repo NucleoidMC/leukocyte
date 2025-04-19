@@ -8,6 +8,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import com.mojang.serialization.Codec;
 import xyz.nucleoid.stimuli.EventSource;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
@@ -18,6 +19,15 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class IndexedAuthorityMap implements AuthorityMap {
+    public static final Codec<IndexedAuthorityMap> CODEC = Authority.CODEC.listOf().xmap(
+            authorities -> {
+                var map = new IndexedAuthorityMap();
+                authorities.forEach(map::add);
+                return map;
+            },
+            map -> map.main.stream().toList()
+    );
+
     private final AuthorityMap main = new AuthoritySortedHashMap();
     private final Reference2ObjectMap<RegistryKey<World>, DimensionMap> byDimension = new Reference2ObjectOpenHashMap<>();
 
