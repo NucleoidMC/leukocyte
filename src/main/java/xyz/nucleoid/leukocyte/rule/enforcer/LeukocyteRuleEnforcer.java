@@ -26,6 +26,7 @@ import xyz.nucleoid.stimuli.event.block.CoralDeathEvent;
 import xyz.nucleoid.stimuli.event.block.DispenserActivateEvent;
 import xyz.nucleoid.stimuli.event.block.FlowerPotModifyEvent;
 import xyz.nucleoid.stimuli.event.block.FluidRandomTickEvent;
+import xyz.nucleoid.stimuli.event.block.PowderSnowMeltEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityActivateDeathProtectionEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityShearEvent;
 import xyz.nucleoid.stimuli.event.entity.EntitySpawnEvent;
@@ -216,6 +217,9 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.ICE_MELT))
                 .applySimple(IceMeltEvent.EVENT, rule -> (world, pos) -> rule);
+
+        this.forRule(events, rules.test(ProtectionRule.POWDER_SNOW_MELT))
+                .applySimple(PowderSnowMeltEvent.EVENT, rule -> (entity, world, pos) -> rule);
 
         this.forRule(events, rules.test(ProtectionRule.SNOW_FALL))
                 .applySimple(SnowFallEvent.EVENT, rule -> (world, pos) -> rule);
