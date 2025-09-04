@@ -41,6 +41,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `fire_tick` controls whether fire tick is enabled within the authority. Defaults to gamerule if not set
  - `fluid_flow` controls whether fluids flow
  - `ice_melt` controls whether ice and frosted ice melt
+ - `powder_snow_melt` controls whether powder snow melts
  - `snow_fall` controls whether snow can form on surfaces during snowfall
  - `coral_death` controls whether coral and coral fan blocks can die
  - `throw_projectiles` controls whether players can throw eggs, snowballs, or tridents

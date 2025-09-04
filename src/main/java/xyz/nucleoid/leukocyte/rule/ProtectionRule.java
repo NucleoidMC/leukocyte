@@ -48,6 +48,7 @@ public final class ProtectionRule {
     public static final ProtectionRule FIRE_TICK = register("fire_tick");
     public static final ProtectionRule FLUID_FLOW = register("fluid_flow");
     public static final ProtectionRule ICE_MELT = register("ice_melt");
+    public static final ProtectionRule POWDER_SNOW_MELT = register("powder_snow_melt");
     public static final ProtectionRule SNOW_FALL = register("snow_fall");
     public static final ProtectionRule CORAL_DEATH = register("coral_death");
 
