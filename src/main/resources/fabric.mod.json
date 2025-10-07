@@ -14,8 +14,8 @@
   "depends": {
     "fabricloader": ">=0.12",
     "fabric": "*",
-    "minecraft": ">=1.21.6-",
-    "stimuli": ">=0.5.2",
+    "minecraft": ">=1.21.9-",
+    "stimuli": ">=0.5.3",
     "java": ">=21"
   }
 }
