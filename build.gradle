@@ -1,12 +1,14 @@
 plugins {
-  id 'fabric-loom' version '1.10.+'
+  id 'fabric-loom' version '1.11.+'
   id "com.modrinth.minotaur" version "2.+"
 }
-import com.modrinth.minotaur.TaskModrinthUpload
 
-archivesBaseName = project.archives_base_name
 version = project.mod_version + "+" + project.minecraft_version
 group = project.maven_group
+
+base {
+  archivesName = project.archives_base_name
+}
 
 repositories {
   maven { url = "https://maven.nucleoid.xyz" }
@@ -49,7 +51,7 @@ java {
 
 jar {
   from("LICENSE") {
-    rename { "${it}_${project.archivesBaseName}" }
+    rename { "${it}_${project.base.archivesName}" }
   }
 }
 

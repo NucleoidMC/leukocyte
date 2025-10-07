@@ -183,8 +183,8 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
         this.forRule(events, rules.test(ProtectionRule.UNSTABLE_TNT))
                 .applySimple(BlockPlaceEvent.AFTER, rule -> (player, world, pos, state) -> {
                             if (rule == EventResult.ALLOW && state.getBlock() == Blocks.TNT) {
-                                TntBlock.primeTnt(player.getWorld(), pos);
-                                player.getWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
+                                TntBlock.primeTnt(player.getEntityWorld(), pos);
+                                player.getEntityWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
                             }
                         }
                 );
