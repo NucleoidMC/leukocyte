@@ -1,10 +1,10 @@
 package xyz.nucleoid.leukocyte.rule;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import xyz.nucleoid.leukocyte.roles.PermissionAccessor;
 import xyz.nucleoid.leukocyte.roles.RoleAccessor;
@@ -69,12 +69,12 @@ public final class ProtectionExclusions {
 
     public boolean removePermission(String permission) { return this.permissions.remove(permission); }
 
-    public boolean addPlayer(GameProfile profile) {
-        return this.players.add(profile.getId());
+    public boolean addPlayer(PlayerConfigEntry player) {
+        return this.players.add(player.id());
     }
 
-    public boolean removePlayer(GameProfile profile) {
-        return this.players.remove(profile.getId());
+    public boolean removePlayer(PlayerConfigEntry player) {
+        return this.players.remove(player.id());
     }
 
     public boolean isExcluded(PlayerEntity player) {
