@@ -32,6 +32,7 @@ Leukocyte provides various rules that can be applied within authorities. These r
  - `activate_death_protection` controls whether entities should activate death protection items such as totems of undying to avoid dying
  - `throw_items` controls whether players can throw items from their inventory
  - `pickup_items` controls whether items can be picked up by players or other entities
+ - `modify_containers` controls whether players can interact with slots and buttons in containers or other handled screens
  - `unstable_tnt` controls tnt automatically igniting when placed
  - `ignite_tnt` controls whether tnt can be ignited
  - `modify_flower_pots` controls whether plants can be placed in or removed from flower pots

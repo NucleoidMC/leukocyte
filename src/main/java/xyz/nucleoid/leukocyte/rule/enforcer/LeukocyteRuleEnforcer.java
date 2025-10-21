@@ -7,9 +7,16 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.c2s.play.ButtonClickC2SPacket;
+import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.ProtectionRuleMap;
@@ -36,6 +43,7 @@ import xyz.nucleoid.stimuli.event.item.ItemPickupEvent;
 import xyz.nucleoid.stimuli.event.item.ItemThrowEvent;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerAttackEntityEvent;
+import xyz.nucleoid.stimuli.event.player.PlayerC2SPacketEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerConsumeHungerEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerRegenerateEvent;
@@ -107,6 +115,20 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
                 .applySimple(ItemThrowEvent.EVENT, rule -> (player, slot, stack) -> rule);
         this.forRule(events, rules.test(ProtectionRule.PICKUP_ITEMS))
                 .applySimple(ItemPickupEvent.EVENT, rule -> (player, entity, stack) -> rule);
+
+        this.forRule(events, rules.test(ProtectionRule.MODIFY_CONTAINERS))
+                .applySimple(PlayerC2SPacketEvent.EVENT, rule -> {
+                    return (sender, message) -> {
+                        if (message instanceof ClickSlotC2SPacket clickSlotPacket && sender.currentScreenHandler.syncId == clickSlotPacket.getSyncId() && !isPlayerSlot(sender, clickSlotPacket)) {
+                            sender.currentScreenHandler.syncState();
+                            return rule;
+                        } else if (message instanceof ButtonClickC2SPacket) {
+                            return rule;
+                        }
+
+                        return ActionResult.PASS;
+                    };
+                });
 
         this.forRule(events, rules.test(ProtectionRule.SPAWN_MONSTERS))
                 .applySimple(EntitySpawnEvent.EVENT, rule -> entity -> entity instanceof Monster ? rule : EventResult.PASS);
@@ -226,5 +248,26 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.CORAL_DEATH))
                 .applySimple(CoralDeathEvent.EVENT, rule -> (world, pos, from, to) -> rule);
+    }
+
+    private static boolean isPlayerSlot(ServerPlayerEntity sender, ClickSlotC2SPacket clickSlotPacket) {
+        // All slots in the player screen handler are valid
+        ScreenHandler screenHandler = sender.currentScreenHandler;
+        if (screenHandler instanceof PlayerScreenHandler) return true;
+
+        // Defer to vanilla handling for invalid and special case slots
+        int slot = clickSlotPacket.getSlot();
+
+        if (!screenHandler.isValid(slot)) return true;
+        if (slot < 0) return true;
+
+        // Avoid action types that can affect both player and container slots
+        SlotActionType actionType = clickSlotPacket.getActionType();
+
+        if (actionType == SlotActionType.QUICK_MOVE) return false;
+        if (actionType == SlotActionType.PICKUP_ALL) return false;
+
+        // Check the inventory associated with the slot
+        return screenHandler.getSlot(slot).inventory instanceof PlayerInventory;
     }
 }
