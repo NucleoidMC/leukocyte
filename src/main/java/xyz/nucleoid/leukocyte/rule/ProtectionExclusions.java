@@ -3,6 +3,7 @@ package xyz.nucleoid.leukocyte.rule;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.command.DefaultPermissions;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -78,7 +79,7 @@ public final class ProtectionExclusions {
     }
 
     public boolean isExcluded(PlayerEntity player) {
-        if (!this.includeOperators && player.hasPermissionLevel(4)) {
+        if (!this.includeOperators && player.getPermissions().hasPermission(DefaultPermissions.OWNERS)) {
             return true;
         }
 

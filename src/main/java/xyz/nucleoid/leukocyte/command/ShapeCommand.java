@@ -9,6 +9,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.DimensionArgumentType;
+import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -38,7 +39,7 @@ public final class ShapeCommand {
         // @formatter:off
         dispatcher.register(
             literal("protect")
-                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", 4))
+                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", PermissionLevel.OWNERS))
                 .then(literal("shape")
                     .then(literal("start").executes(ShapeCommand::startShape))
                     .then(literal("stop").executes(ShapeCommand::stopShape))

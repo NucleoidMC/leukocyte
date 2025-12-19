@@ -12,6 +12,7 @@ import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.GameProfileArgumentType;
+import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.entity.Entity;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.command.ServerCommandSource;
@@ -47,7 +48,7 @@ public final class ProtectCommand {
         // @formatter:off
         dispatcher.register(
             literal("protect")
-                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", 4))
+                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", PermissionLevel.OWNERS))
                 .then(literal("add")
                     .then(argument("authority", StringArgumentType.string())
                     .executes(ProtectCommand::addAuthority)
