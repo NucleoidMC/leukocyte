@@ -1,11 +1,11 @@
 package xyz.nucleoid.leukocyte.shape;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public interface ShapeBuilder {
     @Nullable
-    static ShapeBuilder start(ServerPlayerEntity player) {
+    static ShapeBuilder start(ServerPlayer player) {
         var builder = (ShapeBuilder) player;
         if (!builder.isBuilding()) {
             builder.start();
@@ -16,7 +16,7 @@ public interface ShapeBuilder {
     }
 
     @Nullable
-    static ShapeBuilder from(ServerPlayerEntity player) {
+    static ShapeBuilder from(ServerPlayer player) {
         var builder = (ShapeBuilder) player;
         if (builder.isBuilding()) {
             return builder;

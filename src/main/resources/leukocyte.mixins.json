@@ -4,7 +4,7 @@
   "package": "xyz.nucleoid.leukocyte.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "shape.ServerPlayerEntityMixin"
+	  "shape.ServerPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

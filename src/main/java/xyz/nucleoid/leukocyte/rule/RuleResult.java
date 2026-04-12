@@ -2,10 +2,6 @@ package xyz.nucleoid.leukocyte.rule;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.leukocyte.authority.Authority;
@@ -13,11 +9,15 @@ import xyz.nucleoid.stimuli.event.EventResult;
 
 import java.util.Map;
 import java.util.Set;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public enum RuleResult {
-    PASS("pass", Formatting.YELLOW),
-    ALLOW("allow", Formatting.GREEN),
-    DENY("deny", Formatting.RED);
+    PASS("pass", ChatFormatting.YELLOW),
+    ALLOW("allow", ChatFormatting.GREEN),
+    DENY("deny", ChatFormatting.RED);
 
     public static final RuleResult[] VALUES = values();
     private static final Map<String, RuleResult> BY_KEY = new Object2ObjectOpenHashMap<>();
@@ -31,9 +31,9 @@ public enum RuleResult {
     }
 
     private final String key;
-    private final Formatting formatting;
+    private final ChatFormatting formatting;
 
-    RuleResult(String key, Formatting formatting) {
+    RuleResult(String key, ChatFormatting formatting) {
         this.key = key;
         this.formatting = formatting;
     }
@@ -42,15 +42,15 @@ public enum RuleResult {
         return this.key;
     }
 
-    public Formatting getFormatting() {
+    public ChatFormatting getFormatting() {
         return this.formatting;
     }
 
-    public MutableText display() {
-        return Text.literal(this.key).formatted(this.formatting);
+    public MutableComponent display() {
+        return Component.literal(this.key).withStyle(this.formatting);
     }
 
-    public MutableText clickableDisplay(Authority authority, ProtectionRule rule) {
+    public MutableComponent clickableDisplay(Authority authority, ProtectionRule rule) {
         if (!this.isDefinitive()) {
             return this.display();
         }
@@ -58,7 +58,7 @@ public enum RuleResult {
         var command = "/protect set rule " + authority.getKey() + " " + rule.getKey() + " " + this.getOpposite().key;
         var clickEvent = new ClickEvent.SuggestCommand(command);
 
-        return this.display().styled(style -> style.withClickEvent(clickEvent));
+        return this.display().withStyle(style -> style.withClickEvent(clickEvent));
     }
 
     public RuleResult getOpposite() {

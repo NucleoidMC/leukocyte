@@ -3,15 +3,15 @@ package xyz.nucleoid.leukocyte.rule;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.command.DefaultPermissions;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
 import xyz.nucleoid.leukocyte.roles.PermissionAccessor;
 import xyz.nucleoid.leukocyte.roles.RoleAccessor;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.*;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.world.entity.player.Player;
 
 public final class ProtectionExclusions {
     private static final Codec<UUID> UUID_CODEC = Codec.STRING.xmap(UUID::fromString, UUID::toString);
@@ -48,7 +48,7 @@ public final class ProtectionExclusions {
         return source -> {
             if (filter.accepts(source)) {
                 var entity = source.getEntity();
-                return !(entity instanceof PlayerEntity player && this.isExcluded(player));
+                return !(entity instanceof Player player && this.isExcluded(player));
             }
             return false;
         };
@@ -70,24 +70,24 @@ public final class ProtectionExclusions {
 
     public boolean removePermission(String permission) { return this.permissions.remove(permission); }
 
-    public boolean addPlayer(PlayerConfigEntry player) {
+    public boolean addPlayer(NameAndId player) {
         return this.players.add(player.id());
     }
 
-    public boolean removePlayer(PlayerConfigEntry player) {
+    public boolean removePlayer(NameAndId player) {
         return this.players.remove(player.id());
     }
 
-    public boolean isExcluded(PlayerEntity player) {
-        if (!this.includeOperators && player.getPermissions().hasPermission(DefaultPermissions.OWNERS)) {
+    public boolean isExcluded(Player player) {
+        if (!this.includeOperators && player.permissions().hasPermission(Permissions.COMMANDS_OWNER)) {
             return true;
         }
 
-        if (this.players.contains(player.getUuid())) {
+        if (this.players.contains(player.getUUID())) {
             return true;
         }
 
-        if (player instanceof ServerPlayerEntity serverPlayer) {
+        if (player instanceof ServerPlayer serverPlayer) {
             for (var excludeRole : this.roles) {
                 if (RoleAccessor.INSTANCE.hasRole(serverPlayer, excludeRole)) {
                     return true;

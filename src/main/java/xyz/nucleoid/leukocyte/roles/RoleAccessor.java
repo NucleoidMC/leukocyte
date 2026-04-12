@@ -3,8 +3,7 @@ package xyz.nucleoid.leukocyte.roles;
 import dev.gegy.roles.api.PlayerRolesApi;
 import dev.gegy.roles.api.Role;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.network.ServerPlayerEntity;
-
+import net.minecraft.server.level.ServerPlayer;
 import java.util.stream.Stream;
 
 public interface RoleAccessor {
@@ -12,7 +11,7 @@ public interface RoleAccessor {
 
     Stream<String> getAllRoles();
 
-    boolean hasRole(ServerPlayerEntity player, String role);
+    boolean hasRole(ServerPlayer player, String role);
 
     final class None implements RoleAccessor {
         None() {
@@ -24,7 +23,7 @@ public interface RoleAccessor {
         }
 
         @Override
-        public boolean hasRole(ServerPlayerEntity player, String role) {
+        public boolean hasRole(ServerPlayer player, String role) {
             return false;
         }
     }
@@ -39,7 +38,7 @@ public interface RoleAccessor {
         }
 
         @Override
-        public boolean hasRole(ServerPlayerEntity player, String roleId) {
+        public boolean hasRole(ServerPlayer player, String roleId) {
             var role = PlayerRolesApi.provider().get(roleId);
             if (role != null) {
                 return PlayerRolesApi.lookup().byPlayer(player).has(role);

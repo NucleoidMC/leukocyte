@@ -2,15 +2,15 @@ package xyz.nucleoid.leukocyte.authority;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.leukocyte.shape.UnionShape;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.Arrays;
 import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public final class AuthorityShapes {
     public static final Codec<AuthorityShapes> CODEC = Entry.CODEC.listOf().xmap(
@@ -74,14 +74,14 @@ public final class AuthorityShapes {
         return this.combinedShape.asEventFilter();
     }
 
-    public Text displayList() {
+    public Component displayList() {
         if (this.entries.length == 0) {
-            return Text.literal("Empty\n").formatted(Formatting.YELLOW);
+            return Component.literal("Empty\n").withStyle(ChatFormatting.YELLOW);
         }
 
-        MutableText text = Text.literal("");
+        MutableComponent text = Component.literal("");
         for (var entry : this.entries) {
-            text = text.append(Text.literal("  " + entry.name).formatted(Formatting.AQUA))
+            text = text.append(Component.literal("  " + entry.name).withStyle(ChatFormatting.AQUA))
                     .append(": ")
                     .append(entry.shape.displayShort())
                     .append("\n");
@@ -90,7 +90,7 @@ public final class AuthorityShapes {
         return text;
     }
 
-    public Text displayShort() {
+    public Component displayShort() {
         return this.combinedShape.displayShort();
     }
 

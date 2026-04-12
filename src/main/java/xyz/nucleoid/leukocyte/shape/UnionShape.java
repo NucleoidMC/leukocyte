@@ -1,12 +1,12 @@
 package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.Arrays;
 import java.util.List;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public final class UnionShape implements ProtectionShape {
     public static final MapCodec<UnionShape> CODEC = ProtectionShape.CODEC.listOf().xmap(
@@ -43,14 +43,14 @@ public final class UnionShape implements ProtectionShape {
     }
 
     @Override
-    public MutableText display() {
+    public MutableComponent display() {
         if (this.scopes.length == 1) {
             return this.scopes[0].display();
         } else if (this.scopes.length == 0) {
-            return Text.literal("()");
+            return Component.literal("()");
         }
 
-        MutableText text = Text.literal("(");
+        MutableComponent text = Component.literal("(");
         for (int i = 0; i < this.scopes.length; i++) {
             text = text.append(this.scopes[i].display());
             if (i < this.scopes.length - 1) {
@@ -61,13 +61,13 @@ public final class UnionShape implements ProtectionShape {
     }
 
     @Override
-    public MutableText displayShort() {
+    public MutableComponent displayShort() {
         if (this.scopes.length == 1) {
             return this.scopes[0].display();
         } else if (this.scopes.length == 0) {
-            return Text.literal("()");
+            return Component.literal("()");
         }
-        return Text.literal(this.scopes.length + " combined shapes");
+        return Component.literal(this.scopes.length + " combined shapes");
     }
 
     @Override

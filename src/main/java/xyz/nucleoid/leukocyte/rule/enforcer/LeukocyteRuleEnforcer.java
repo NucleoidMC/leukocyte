@@ -1,16 +1,5 @@
 package xyz.nucleoid.leukocyte.rule.enforcer;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.block.TntBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.util.ActionResult;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.ProtectionRuleMap;
 import xyz.nucleoid.stimuli.event.DroppedItemsResult;
@@ -43,6 +32,16 @@ import xyz.nucleoid.stimuli.event.player.PlayerSpectateEntityEvent;
 import xyz.nucleoid.stimuli.event.world.*;
 
 import java.util.ArrayList;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.TntBlock;
 
 public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
     public static final LeukocyteRuleEnforcer INSTANCE = new LeukocyteRuleEnforcer();
@@ -60,7 +59,7 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.PVP))
                 .applySimple(PlayerAttackEntityEvent.EVENT, rule -> (attacker, hand, attacked, hitResult) -> {
-                    return attacked instanceof PlayerEntity ? rule : EventResult.PASS;
+                    return attacked instanceof Player ? rule : EventResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.SPECTATE_ENTITIES))
@@ -77,27 +76,27 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
 
         this.forRule(events, rules.test(ProtectionRule.FALL_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FALL) ? rule : EventResult.PASS;
+                    return (player, source, amount) -> source.is(DamageTypeTags.IS_FALL) ? rule : EventResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.FIRE_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FIRE) && !source.isOf(DamageTypes.LAVA) ? rule : EventResult.PASS;
+                    return (player, source, amount) -> source.is(DamageTypeTags.IS_FIRE) && !source.is(DamageTypes.LAVA) ? rule : EventResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.FREEZING_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source.isIn(DamageTypeTags.IS_FREEZING) ? rule : EventResult.PASS;
+                    return (player, source, amount) -> source.is(DamageTypeTags.IS_FREEZING) ? rule : EventResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.LAVA_DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> source.isOf(DamageTypes.LAVA) ? rule : EventResult.PASS;
+                    return (player, source, amount) -> source.is(DamageTypes.LAVA) ? rule : EventResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.DAMAGE))
                 .applySimple(PlayerDamageEvent.EVENT, rule -> {
-                    return (player, source, amount) -> !source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) ? rule : EventResult.PASS;
+                    return (player, source, amount) -> !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) ? rule : EventResult.PASS;
                 });
 
         this.forRule(events, rules.test(ProtectionRule.ACTIVATE_DEATH_PROTECTION))
@@ -109,20 +108,20 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
                 .applySimple(ItemPickupEvent.EVENT, rule -> (player, entity, stack) -> rule);
 
         this.forRule(events, rules.test(ProtectionRule.SPAWN_MONSTERS))
-                .applySimple(EntitySpawnEvent.EVENT, rule -> entity -> entity instanceof Monster ? rule : EventResult.PASS);
+                .applySimple(EntitySpawnEvent.EVENT, rule -> entity -> entity instanceof Enemy ? rule : EventResult.PASS);
 
         this.forRule(events, rules.test(ProtectionRule.SPAWN_ANIMALS))
-                .applySimple(EntitySpawnEvent.EVENT, rule -> entity -> entity instanceof AnimalEntity ? rule : EventResult.PASS);
+                .applySimple(EntitySpawnEvent.EVENT, rule -> entity -> entity instanceof Animal ? rule : EventResult.PASS);
 
         this.forRule(events, rules.test(ProtectionRule.THROW_PROJECTILES))
                 .applySimple(ItemUseEvent.EVENT, rule -> {
                     return (player, hand) -> {
-                        ItemStack stack = player.getStackInHand(hand);
-                        if (stack.isOf(Items.EGG) || stack.isOf(Items.SNOWBALL) || stack.isOf(Items.TRIDENT)) {
-                            return ActionResult.FAIL;
+                        ItemStack stack = player.getItemInHand(hand);
+                        if (stack.is(Items.EGG) || stack.is(Items.SNOWBALL) || stack.is(Items.TRIDENT)) {
+                            return InteractionResult.FAIL;
                         }
 
-                        return ActionResult.PASS;
+                        return InteractionResult.PASS;
                     };
                 });
 
@@ -183,8 +182,8 @@ public final class LeukocyteRuleEnforcer implements ProtectionRuleEnforcer {
         this.forRule(events, rules.test(ProtectionRule.UNSTABLE_TNT))
                 .applySimple(BlockPlaceEvent.AFTER, rule -> (player, world, pos, state) -> {
                             if (rule == EventResult.ALLOW && state.getBlock() == Blocks.TNT) {
-                                TntBlock.primeTnt(player.getEntityWorld(), pos);
-                                player.getEntityWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
+                                TntBlock.prime(player.level(), pos);
+                                player.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                             }
                         }
                 );
