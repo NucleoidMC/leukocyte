@@ -4,8 +4,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.mojang.serialization.Codec;
@@ -17,6 +15,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 public final class IndexedAuthorityMap implements AuthorityMap {
     public static final Codec<IndexedAuthorityMap> CODEC = Authority.CODEC.listOf().xmap(
@@ -29,9 +29,9 @@ public final class IndexedAuthorityMap implements AuthorityMap {
     );
 
     private final AuthorityMap main = new AuthoritySortedHashMap();
-    private final Reference2ObjectMap<RegistryKey<World>, DimensionMap> byDimension = new Reference2ObjectOpenHashMap<>();
+    private final Reference2ObjectMap<ResourceKey<Level>, DimensionMap> byDimension = new Reference2ObjectOpenHashMap<>();
 
-    public void addDimension(RegistryKey<World> dimension) {
+    public void addDimension(ResourceKey<Level> dimension) {
         var source = EventSource.allOf(dimension);
 
         var dimensionMap = new DimensionMap(dimension);
@@ -44,11 +44,11 @@ public final class IndexedAuthorityMap implements AuthorityMap {
         this.byDimension.put(dimension, dimensionMap);
     }
 
-    public void removeDimension(RegistryKey<World> dimension) {
+    public void removeDimension(ResourceKey<Level> dimension) {
         this.byDimension.remove(dimension);
     }
 
-    public Iterable<Authority> select(RegistryKey<World> dimension, StimulusEvent<?> event) {
+    public Iterable<Authority> select(ResourceKey<Level> dimension, StimulusEvent<?> event) {
         var dimensionMap = this.byDimension.get(dimension);
         if (dimensionMap != null) {
             var map = dimensionMap.byEvent.get(event);
@@ -171,7 +171,7 @@ public final class IndexedAuthorityMap implements AuthorityMap {
         final EventSource eventSource;
         final Map<StimulusEvent<?>, AuthorityMap> byEvent = new Reference2ObjectOpenHashMap<>();
 
-        DimensionMap(RegistryKey<World> dimension) {
+        DimensionMap(ResourceKey<Level> dimension) {
             this.eventSource = EventSource.allOf(dimension);
         }
 

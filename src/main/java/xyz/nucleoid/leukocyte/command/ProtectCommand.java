@@ -8,18 +8,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.DimensionArgumentType;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.GameProfileArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
@@ -34,20 +22,33 @@ import xyz.nucleoid.stimuli.EventSource;
 
 import java.util.ArrayList;
 import java.util.function.UnaryOperator;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.DimensionArgument;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.GameProfileArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.permissions.PermissionLevel;
+import net.minecraft.world.entity.Entity;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public final class ProtectCommand {
     private static final DynamicCommandExceptionType AUTHORITY_ALREADY_EXISTS = new DynamicCommandExceptionType(id -> {
         return new LiteralMessage("Authority with the id '" + id + "' already exists!");
     });
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         // @formatter:off
         dispatcher.register(
             literal("protect")
-                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", 4))
+                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", PermissionLevel.OWNERS))
                 .then(literal("add")
                     .then(argument("authority", StringArgumentType.string())
                     .executes(ProtectCommand::addAuthority)
@@ -55,14 +56,14 @@ public final class ProtectCommand {
                             .then(literal("universe")
                                 .executes(ProtectCommand::addAuthorityWithUniverse)
                             )
-                            .then(argument("dimension", DimensionArgumentType.dimension())
+                            .then(argument("dimension", DimensionArgument.dimension())
                                 .executes(ProtectCommand::addAuthorityWithDimension)
-                                    .then(argument("min", BlockPosArgumentType.blockPos())
-                                    .then(argument("max", BlockPosArgumentType.blockPos())
+                                    .then(argument("min", BlockPosArgument.blockPos())
+                                    .then(argument("max", BlockPosArgument.blockPos())
                                     .executes(ProtectCommand::addAuthorityWithBox)
                             )))
-                            .then(argument("min", BlockPosArgumentType.blockPos())
-                            .then(argument("max", BlockPosArgumentType.blockPos())
+                            .then(argument("min", BlockPosArgument.blockPos())
+                            .then(argument("max", BlockPosArgument.blockPos())
                                 .executes(ProtectCommand::addAuthorityWithLocalBox)
                             ))
                         )
@@ -88,7 +89,7 @@ public final class ProtectCommand {
                     .then(literal("add")
                         .then(AuthorityArgument.argument("authority")
                             .then(literal("player")
-                                .then(argument("player", GameProfileArgumentType.gameProfile())
+                                .then(argument("player", GameProfileArgument.gameProfile())
                                 .executes(ProtectCommand::addPlayerExclusion))
                             )
 
@@ -105,7 +106,7 @@ public final class ProtectCommand {
                     .then(literal("remove")
                         .then(AuthorityArgument.argument("authority")
                             .then(literal("player")
-                                .then(argument("player", GameProfileArgumentType.gameProfile())
+                                .then(argument("player", GameProfileArgument.gameProfile())
                                 .executes(ProtectCommand::removePlayerExclusion))
                             )
 
@@ -127,40 +128,40 @@ public final class ProtectCommand {
                 .then(literal("list").executes(ProtectCommand::listAuthorities))
                 .then(literal("test")
                     .executes(ProtectCommand::testRulesAtSource)
-                        .then(argument("entity", EntityArgumentType.entity())
+                        .then(argument("entity", EntityArgument.entity())
                         .executes(ProtectCommand::testRulesForEntity)))
         );
         // @formatter:on
     }
 
-    private static int addAuthority(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int addAuthority(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return addAuthority(context, authority -> authority);
     }
 
-    private static int addAuthorityWithUniverse(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int addAuthorityWithUniverse(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return addAuthority(context, authority -> authority.addShape(authority.getKey(), ProtectionShape.universe()));
     }
 
-    private static int addAuthorityWithBox(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
-        var min = BlockPosArgumentType.getBlockPos(context, "min");
-        var max = BlockPosArgumentType.getBlockPos(context, "max");
+    private static int addAuthorityWithBox(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var dimension = DimensionArgument.getDimension(context, "dimension").dimension();
+        var min = BlockPosArgument.getBlockPos(context, "min");
+        var max = BlockPosArgument.getBlockPos(context, "max");
         return addAuthority(context, authority -> authority.addShape(authority.getKey(), ProtectionShape.box(dimension, min, max)));
     }
 
-    private static int addAuthorityWithLocalBox(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var dimension = context.getSource().getWorld().getRegistryKey();
-        var min = BlockPosArgumentType.getBlockPos(context, "min");
-        var max = BlockPosArgumentType.getBlockPos(context, "max");
+    private static int addAuthorityWithLocalBox(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var dimension = context.getSource().getLevel().dimension();
+        var min = BlockPosArgument.getBlockPos(context, "min");
+        var max = BlockPosArgument.getBlockPos(context, "max");
         return addAuthority(context, authority -> authority.addShape(authority.getKey(), ProtectionShape.box(dimension, min, max)));
     }
 
-    private static int addAuthorityWithDimension(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var dimension = DimensionArgumentType.getDimensionArgument(context, "dimension").getRegistryKey();
+    private static int addAuthorityWithDimension(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var dimension = DimensionArgument.getDimension(context, "dimension").dimension();
         return addAuthority(context, authority -> authority.addShape(authority.getKey(), ProtectionShape.dimension(dimension)));
     }
 
-    private static int addAuthority(CommandContext<ServerCommandSource> context, UnaryOperator<Authority> operator) throws CommandSyntaxException {
+    private static int addAuthority(CommandContext<CommandSourceStack> context, UnaryOperator<Authority> operator) throws CommandSyntaxException {
         var key = StringArgumentType.getString(context, "authority");
 
         var source = context.getSource();
@@ -170,16 +171,16 @@ public final class ProtectCommand {
         if (leukocyte.addAuthority(authority)) {
             var shapes = authority.getShapes();
             if (shapes.isEmpty()) {
-                source.sendFeedback(() -> Text.literal("Added empty authority as '" + key + "'"), true);
+                source.sendSuccess(() -> Component.literal("Added empty authority as '" + key + "'"), true);
             } else {
-                source.sendFeedback(() -> Text.literal("Added authority as '" + key + "' with ").append(shapes.displayShort()), true);
+                source.sendSuccess(() -> Component.literal("Added authority as '" + key + "' with ").append(shapes.displayShort()), true);
             }
 
-            source.sendFeedback(
-                    () -> Text.literal("Run ")
-                            .append(Text.literal("/protect shape start").formatted(Formatting.GRAY))
+            source.sendSuccess(
+                    () -> Component.literal("Run ")
+                            .append(Component.literal("/protect shape start").withStyle(ChatFormatting.GRAY))
                             .append(" to include additional shapes in this authority, and ")
-                            .append(Text.literal("/protect set rule " + key + " <rule> <allow|deny>").formatted(Formatting.GRAY))
+                            .append(Component.literal("/protect set rule " + key + " <rule> <allow|deny>").withStyle(ChatFormatting.GRAY))
                             .append(" to set the rules on this authority"),
                     false
             );
@@ -190,18 +191,18 @@ public final class ProtectCommand {
         }
     }
 
-    private static int remove(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int remove(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
 
         var leukocyte = Leukocyte.get(context.getSource().getServer());
         leukocyte.removeAuthority(authority.getKey());
 
-        context.getSource().sendFeedback(() -> Text.literal("Removed authority " + authority.getKey()), true);
+        context.getSource().sendSuccess(() -> Component.literal("Removed authority " + authority.getKey()), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int setRule(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int setRule(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var leukocyte = Leukocyte.get(context.getSource().getServer());
         var authority = AuthorityArgument.get(context, "authority");
 
@@ -211,12 +212,12 @@ public final class ProtectCommand {
         var newAuthority = authority.withRule(rule, result);
         leukocyte.replaceAuthority(authority, newAuthority);
 
-        context.getSource().sendFeedback(() -> Text.literal("Set rule " + rule.getKey() + " = " + result.getKey() + " for " + authority.getKey()), true);
+        context.getSource().sendSuccess(() -> Component.literal("Set rule " + rule.getKey() + " = " + result.getKey() + " for " + authority.getKey()), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int setLevel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int setLevel(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
         int level = IntegerArgumentType.getInteger(context, "level");
 
@@ -225,14 +226,14 @@ public final class ProtectCommand {
         var newAuthority = authority.withLevel(level);
         leukocyte.replaceAuthority(authority, newAuthority);
 
-        context.getSource().sendFeedback(() -> Text.literal("Changed level of " + authority.getKey() + " from " + authority.getLevel() + " to " + level), true);
+        context.getSource().sendSuccess(() -> Component.literal("Changed level of " + authority.getKey() + " from " + authority.getLevel() + " to " + level), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int addPlayerExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int addPlayerExclusion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
-        var players = GameProfileArgumentType.getProfileArgument(context, "player");
+        var players = GameProfileArgument.getGameProfiles(context, "player");
 
         var exclusions = authority.getExclusions();
 
@@ -240,14 +241,14 @@ public final class ProtectCommand {
                 .filter(exclusions::addPlayer)
                 .count();
 
-        context.getSource().sendFeedback(() -> Text.literal("Added " + count + " player exclusions to " + authority.getKey()), true);
+        context.getSource().sendSuccess(() -> Component.literal("Added " + count + " player exclusions to " + authority.getKey()), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int removePlayerExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int removePlayerExclusion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
-        var players = GameProfileArgumentType.getProfileArgument(context, "player");
+        var players = GameProfileArgument.getGameProfiles(context, "player");
 
         var exclusions = authority.getExclusions();
 
@@ -255,76 +256,76 @@ public final class ProtectCommand {
                 .filter(exclusions::removePlayer)
                 .count();
 
-        context.getSource().sendFeedback(() -> Text.literal("Removed " + count + " player exclusions from " + authority.getKey()), true);
+        context.getSource().sendSuccess(() -> Component.literal("Removed " + count + " player exclusions from " + authority.getKey()), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int addRoleExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int addRoleExclusion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
         var role = RoleArgument.get(context, "role");
 
         if (authority.getExclusions().addRole(role)) {
-            context.getSource().sendFeedback(() -> Text.literal("Added '" + role + "' exclusion to " + authority.getKey()), true);
+            context.getSource().sendSuccess(() -> Component.literal("Added '" + role + "' exclusion to " + authority.getKey()), true);
         } else {
-            context.getSource().sendError(Text.literal("'" + role + "' is already excluded"));
+            context.getSource().sendFailure(Component.literal("'" + role + "' is already excluded"));
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int removeRoleExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int removeRoleExclusion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
         var role = RoleArgument.get(context, "role");
 
         if (authority.getExclusions().removeRole(role)) {
-            context.getSource().sendFeedback(() -> Text.literal("Removed '" + role + "' exclusion from " + authority.getKey()), true);
+            context.getSource().sendSuccess(() -> Component.literal("Removed '" + role + "' exclusion from " + authority.getKey()), true);
         } else {
-            context.getSource().sendError(Text.literal("'" + role + "' is not excluded"));
+            context.getSource().sendFailure(Component.literal("'" + role + "' is not excluded"));
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int addPermissionExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int addPermissionExclusion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
         var permission = StringArgumentType.getString(context, "permission");
 
         if (authority.getExclusions().addPermission(permission)) {
-            context.getSource().sendFeedback(() -> Text.literal("Added '" + permission + "' exclusion to " + authority.getKey()), true);
+            context.getSource().sendSuccess(() -> Component.literal("Added '" + permission + "' exclusion to " + authority.getKey()), true);
         } else {
-            context.getSource().sendError(Text.literal("'" + permission + "' is already excluded"));
+            context.getSource().sendFailure(Component.literal("'" + permission + "' is already excluded"));
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int removePermissionExclusion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int removePermissionExclusion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
         var permission = StringArgumentType.getString(context, "permission");
 
         if (authority.getExclusions().removePermission(permission)) {
-            context.getSource().sendFeedback(() -> Text.literal("Removed '" + permission + "' exclusion from " + authority.getKey()), true);
+            context.getSource().sendSuccess(() -> Component.literal("Removed '" + permission + "' exclusion from " + authority.getKey()), true);
         } else {
-            context.getSource().sendError(Text.literal("'" + permission + "' is not excluded"));
+            context.getSource().sendFailure(Component.literal("'" + permission + "' is not excluded"));
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int listAuthorities(CommandContext<ServerCommandSource> context) {
+    private static int listAuthorities(CommandContext<CommandSourceStack> context) {
         var leukocyte = Leukocyte.get(context.getSource().getServer());
 
         var authorities = leukocyte.getAuthorities();
         if (authorities.isEmpty()) {
-            context.getSource().sendError(Text.literal("There are no authorities!"));
+            context.getSource().sendFailure(Component.literal("There are no authorities!"));
             return Command.SINGLE_SUCCESS;
         }
 
-        context.getSource().sendFeedback(() -> {
-            MutableText text = Text.literal("Listing " + authorities.size() + " registered authorities:\n");
+        context.getSource().sendSuccess(() -> {
+            MutableComponent text = Component.literal("Listing " + authorities.size() + " registered authorities:\n");
             for (var authority : authorities) {
-                text = text.append("  ").append(Text.literal(authority.getKey()).formatted(Formatting.AQUA)).append("@" + authority.getLevel() + ": ")
+                text = text.append("  ").append(Component.literal(authority.getKey()).withStyle(ChatFormatting.AQUA)).append("@" + authority.getLevel() + ": ")
                         .append(authority.getShapes().displayShort())
                         .append("\n");
             }
@@ -335,20 +336,20 @@ public final class ProtectCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int testRulesAtSource(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int testRulesAtSource(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return testRules(context, null);
     }
 
-    private static int testRulesForEntity(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var entity = EntityArgumentType.getEntity(context, "entity");
+    private static int testRulesForEntity(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var entity = EntityArgument.getEntity(context, "entity");
         return testRules(context, entity);
     }
 
-    private static int testRules(CommandContext<ServerCommandSource> context, Entity entity) throws CommandSyntaxException {
+    private static int testRules(CommandContext<CommandSourceStack> context, Entity entity) throws CommandSyntaxException {
         var source = context.getSource();
 
-        var world = source.getWorld();
-        var pos = BlockPos.ofFloored(source.getPosition());
+        var world = source.getLevel();
+        var pos = BlockPos.containing(source.getPosition());
 
         var leukocyte = Leukocyte.get(source.getServer());
 
@@ -363,33 +364,33 @@ public final class ProtectCommand {
         }
 
         if (authorities.isEmpty()) {
-            MutableText error = Text.literal("There are no authorities that apply ");
+            MutableComponent error = Component.literal("There are no authorities that apply ");
 
             if (entity != null) {
                 error = error.append("to ");
                 error = error.append(entity.getDisplayName());
-                error = error.append(ScreenTexts.SPACE);
+                error = error.append(CommonComponents.SPACE);
             }
 
             error = error.append("at ");
-            error = error.append(Texts.bracketed(Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())));
+            error = error.append(ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())));
             error = error.append("!");
 
-            source.sendError(error);
+            source.sendFailure(error);
             return Command.SINGLE_SUCCESS;
         }
 
-        source.sendFeedback(() -> {
-            MutableText text = Text.literal("Testing applicable rules ");
+        source.sendSuccess(() -> {
+            MutableComponent text = Component.literal("Testing applicable rules ");
 
             if (entity != null) {
                 text = text.append("for ");
                 text = text.append(entity.getDisplayName());
-                text = text.append(ScreenTexts.SPACE);
+                text = text.append(CommonComponents.SPACE);
             }
 
             text = text.append("at ");
-            text = text.append(Texts.bracketed(Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())));
+            text = text.append(ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())));
             text = text.append(":\n");
 
             text = text.append(" from authorities: ");
@@ -397,7 +398,7 @@ public final class ProtectCommand {
                 var tail = i < authorities.size() - 1 ? ", " : "\n\n";
 
                 var authority = authorities.get(i);
-                text.append(Text.literal(authority.getKey()).formatted(Formatting.AQUA)).append(tail);
+                text.append(Component.literal(authority.getKey()).withStyle(ChatFormatting.AQUA)).append(tail);
             }
 
             boolean empty = true;
@@ -405,8 +406,8 @@ public final class ProtectCommand {
                 for (var authority : authorities) {
                     var result = authority.getRules().test(rule);
                     if (result != RuleResult.PASS) {
-                        text = text.append("  ").append(Text.literal(rule.getKey()).formatted(Formatting.AQUA))
-                                .append(" = ").append(Text.literal(result.getKey()).formatted(result.getFormatting()))
+                        text = text.append("  ").append(Component.literal(rule.getKey()).withStyle(ChatFormatting.AQUA))
+                                .append(" = ").append(Component.literal(result.getKey()).withStyle(result.getFormatting()))
                                 .append(" (" + authority.getKey() + ")\n");
                         empty = false;
                         break;
@@ -424,12 +425,12 @@ public final class ProtectCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int displayAuthority(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int displayAuthority(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
 
-        context.getSource().sendFeedback(() -> {
-            MutableText text = Text.literal("Information for '" + authority.getKey() + "':\n");
-            text = text.append(" Level: ").append(Text.literal(String.valueOf(authority.getLevel())).formatted(Formatting.AQUA)).append("\n");
+        context.getSource().sendSuccess(() -> {
+            MutableComponent text = Component.literal("Information for '" + authority.getKey() + "':\n");
+            text = text.append(" Level: ").append(Component.literal(String.valueOf(authority.getLevel())).withStyle(ChatFormatting.AQUA)).append("\n");
             text = text.append(" Shapes:\n").append(authority.getShapes().displayList());
 
             var rules = authority.getRules();

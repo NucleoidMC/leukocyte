@@ -2,13 +2,13 @@ package xyz.nucleoid.leukocyte.rule;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.leukocyte.authority.Authority;
 
 import java.util.Map;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public final class ProtectionRuleMap {
     public static final Codec<ProtectionRuleMap> CODEC = Codec.unboundedMap(ProtectionRule.CODEC, RuleResult.CODEC).xmap(
@@ -57,14 +57,14 @@ public final class ProtectionRuleMap {
         return new ProtectionRuleMap(this);
     }
 
-    public MutableText clickableDisplay(Authority authority) {
-        MutableText text = Text.literal("");
+    public MutableComponent clickableDisplay(Authority authority) {
+        MutableComponent text = Component.literal("");
 
         for (var entry : this.map.entrySet()) {
             var rule = entry.getKey();
             var result = entry.getValue();
 
-            text = text.append("  ").append(Text.literal(rule.getKey()).formatted(Formatting.GRAY))
+            text = text.append("  ").append(Component.literal(rule.getKey()).withStyle(ChatFormatting.GRAY))
                     .append(" = ").append(result.clickableDisplay(authority, rule))
                     .append("\n");
         }

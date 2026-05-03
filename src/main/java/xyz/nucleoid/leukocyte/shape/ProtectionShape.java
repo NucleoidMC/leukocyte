@@ -2,14 +2,14 @@ package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import xyz.nucleoid.leukocyte.util.StringRegistry;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 import java.util.function.Function;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 public interface ProtectionShape {
     StringRegistry<MapCodec<? extends ProtectionShape>> REGISTRY = new StringRegistry<>();
@@ -23,11 +23,11 @@ public interface ProtectionShape {
         return UniversalShape.INSTANCE;
     }
 
-    static ProtectionShape dimension(RegistryKey<World> dimension) {
+    static ProtectionShape dimension(ResourceKey<Level> dimension) {
         return new DimensionShape(dimension);
     }
 
-    static ProtectionShape box(RegistryKey<World> dimension, BlockPos a, BlockPos b) {
+    static ProtectionShape box(ResourceKey<Level> dimension, BlockPos a, BlockPos b) {
         var min = new BlockPos(
                 Math.min(a.getX(), b.getX()),
                 Math.min(a.getY(), b.getY()),
@@ -50,9 +50,9 @@ public interface ProtectionShape {
 
     MapCodec<? extends ProtectionShape> getCodec();
 
-    MutableText display();
+    MutableComponent display();
 
-    MutableText displayShort();
+    MutableComponent displayShort();
 
     default ProtectionShape union(ProtectionShape other) {
         return union(this, other);

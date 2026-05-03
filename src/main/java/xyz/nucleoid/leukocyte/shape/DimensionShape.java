@@ -2,27 +2,27 @@ package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 public final class DimensionShape implements ProtectionShape {
     public static final MapCodec<DimensionShape> CODEC = RecordCodecBuilder.mapCodec(instance -> {
         return instance.group(
-                Identifier.CODEC.xmap(id -> RegistryKey.of(RegistryKeys.WORLD, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension)
+                Identifier.CODEC.xmap(id -> ResourceKey.create(Registries.DIMENSION, id), ResourceKey::identifier).fieldOf("dimension").forGetter(scope -> scope.dimension)
         ).apply(instance, DimensionShape::new);
     });
 
-    private final RegistryKey<World> dimension;
+    private final ResourceKey<Level> dimension;
 
     private final EventFilter eventFilter;
 
-    public DimensionShape(RegistryKey<World> dimension) {
+    public DimensionShape(ResourceKey<Level> dimension) {
         this.dimension = dimension;
 
         this.eventFilter = EventFilter.dimension(dimension);
@@ -39,12 +39,12 @@ public final class DimensionShape implements ProtectionShape {
     }
 
     @Override
-    public MutableText display() {
-        return Text.literal(this.dimension.getValue().toString()).formatted(Formatting.YELLOW);
+    public MutableComponent display() {
+        return Component.literal(this.dimension.identifier().toString()).withStyle(ChatFormatting.YELLOW);
     }
 
     @Override
-    public MutableText displayShort() {
+    public MutableComponent displayShort() {
         return this.display();
     }
 }

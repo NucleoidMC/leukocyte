@@ -1,9 +1,9 @@
 package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 public final class UniversalShape implements ProtectionShape {
@@ -25,12 +25,12 @@ public final class UniversalShape implements ProtectionShape {
     }
 
     @Override
-    public MutableText display() {
-        return Text.literal("Universe").formatted(Formatting.YELLOW);
+    public MutableComponent display() {
+        return Component.literal("Universe").withStyle(ChatFormatting.YELLOW);
     }
 
     @Override
-    public MutableText displayShort() {
+    public MutableComponent displayShort() {
         return this.display();
     }
 }

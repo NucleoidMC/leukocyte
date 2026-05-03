@@ -2,32 +2,32 @@ package xyz.nucleoid.leukocyte.shape;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import xyz.nucleoid.stimuli.filter.EventFilter;
 
 public final class BoxShape implements ProtectionShape {
     public static final MapCodec<BoxShape> CODEC = RecordCodecBuilder.mapCodec(instance -> {
         return instance.group(
-                Identifier.CODEC.xmap(id -> RegistryKey.of(RegistryKeys.WORLD, id), RegistryKey::getValue).fieldOf("dimension").forGetter(scope -> scope.dimension),
+                Identifier.CODEC.xmap(id -> ResourceKey.create(Registries.DIMENSION, id), ResourceKey::identifier).fieldOf("dimension").forGetter(scope -> scope.dimension),
                 BlockPos.CODEC.fieldOf("min").forGetter(scope -> scope.min),
                 BlockPos.CODEC.fieldOf("max").forGetter(scope -> scope.max)
         ).apply(instance, BoxShape::new);
     });
 
-    private final RegistryKey<World> dimension;
+    private final ResourceKey<Level> dimension;
     private final BlockPos min;
     private final BlockPos max;
 
     private final EventFilter eventFilter;
 
-    public BoxShape(RegistryKey<World> dimension, BlockPos min, BlockPos max) {
+    public BoxShape(ResourceKey<Level> dimension, BlockPos min, BlockPos max) {
         this.dimension = dimension;
         this.min = min;
         this.max = max;
@@ -46,22 +46,22 @@ public final class BoxShape implements ProtectionShape {
     }
 
     @Override
-    public MutableText display() {
-        return Text.literal("[")
-                .append(this.displayPos(this.min).formatted(Formatting.AQUA))
+    public MutableComponent display() {
+        return Component.literal("[")
+                .append(this.displayPos(this.min).withStyle(ChatFormatting.AQUA))
                 .append("; ")
-                .append(this.displayPos(this.max).formatted(Formatting.AQUA))
+                .append(this.displayPos(this.max).withStyle(ChatFormatting.AQUA))
                 .append("] in ")
-                .append(Text.literal(this.dimension.getValue().toString()).formatted(Formatting.YELLOW))
-                .formatted(Formatting.GRAY);
+                .append(Component.literal(this.dimension.identifier().toString()).withStyle(ChatFormatting.YELLOW))
+                .withStyle(ChatFormatting.GRAY);
     }
 
     @Override
-    public MutableText displayShort() {
+    public MutableComponent displayShort() {
         return this.display();
     }
 
-    private MutableText displayPos(BlockPos pos) {
-        return Text.literal("(" + pos.getX() + "; " + pos.getY() + "; " + pos.getZ() + ")");
+    private MutableComponent displayPos(BlockPos pos) {
+        return Component.literal("(" + pos.getX() + "; " + pos.getY() + "; " + pos.getZ() + ")");
     }
 }
