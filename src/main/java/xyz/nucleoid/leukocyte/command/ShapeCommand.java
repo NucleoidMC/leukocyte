@@ -7,6 +7,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import net.fabricmc.fabric.api.permission.v1.PermissionPredicates;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.DimensionArgument;
@@ -15,12 +16,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.permissions.PermissionLevel;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
-import xyz.nucleoid.leukocyte.roles.PermissionAccessor;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.leukocyte.shape.ShapeBuilder;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
+import static xyz.nucleoid.leukocyte.Leukocyte.id;
 
 public final class ShapeCommand {
     private static final SimpleCommandExceptionType NOT_CURRENTLY_BUILDING = new SimpleCommandExceptionType(
@@ -39,7 +40,7 @@ public final class ShapeCommand {
         // @formatter:off
         dispatcher.register(
             literal("protect")
-                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", PermissionLevel.OWNERS))
+                .requires(PermissionPredicates.require(id("commands"), PermissionLevel.OWNERS))
                 .then(literal("shape")
                     .then(literal("start").executes(ShapeCommand::startShape))
                     .then(literal("stop").executes(ShapeCommand::stopShape))

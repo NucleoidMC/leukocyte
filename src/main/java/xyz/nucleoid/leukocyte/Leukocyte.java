@@ -104,4 +104,8 @@ public final class Leukocyte extends SavedData {
     public AuthorityMap getAuthorities() {
         return this.authorities;
     }
+
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath("leukocyte", path);
+    }
 }

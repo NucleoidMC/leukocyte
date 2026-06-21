@@ -8,13 +8,14 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import net.fabricmc.fabric.api.permission.v1.PermissionPredicates;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.command.argument.AuthorityArgument;
 import xyz.nucleoid.leukocyte.command.argument.ProtectionRuleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RoleArgument;
 import xyz.nucleoid.leukocyte.command.argument.RuleResultArgument;
-import xyz.nucleoid.leukocyte.roles.PermissionAccessor;
 import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 import xyz.nucleoid.leukocyte.rule.RuleResult;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
@@ -38,6 +39,7 @@ import net.minecraft.world.entity.Entity;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
+import static xyz.nucleoid.leukocyte.Leukocyte.id;
 
 public final class ProtectCommand {
     private static final DynamicCommandExceptionType AUTHORITY_ALREADY_EXISTS = new DynamicCommandExceptionType(id -> {
@@ -48,7 +50,7 @@ public final class ProtectCommand {
         // @formatter:off
         dispatcher.register(
             literal("protect")
-                .requires(source -> PermissionAccessor.INSTANCE.hasPermission(source, "leukocyte.commands", PermissionLevel.OWNERS))
+                .requires(PermissionPredicates.require(id("commands"), PermissionLevel.OWNERS))
                 .then(literal("add")
                     .then(argument("authority", StringArgumentType.string())
                     .executes(ProtectCommand::addAuthority)
@@ -99,7 +101,7 @@ public final class ProtectCommand {
                             )
 
                             .then(literal("permission")
-                                .then(argument("permission", StringArgumentType.word())
+                                .then(argument("permission", IdentifierArgument.id())
                                 .executes(ProtectCommand::addPermissionExclusion))
                             )
                     ))
@@ -116,7 +118,7 @@ public final class ProtectCommand {
                             )
 
                             .then(literal("permission")
-                                .then(argument("permission", StringArgumentType.word())
+                                .then(argument("permission", IdentifierArgument.id())
                                 .executes(ProtectCommand::removePermissionExclusion))
                             )
                     ))
@@ -289,7 +291,7 @@ public final class ProtectCommand {
 
     private static int addPermissionExclusion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
-        var permission = StringArgumentType.getString(context, "permission");
+        var permission = IdentifierArgument.getId(context, "permission");
 
         if (authority.getExclusions().addPermission(permission)) {
             context.getSource().sendSuccess(() -> Component.literal("Added '" + permission + "' exclusion to " + authority.getKey()), true);
@@ -302,7 +304,7 @@ public final class ProtectCommand {
 
     private static int removePermissionExclusion(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var authority = AuthorityArgument.get(context, "authority");
-        var permission = StringArgumentType.getString(context, "permission");
+        var permission = IdentifierArgument.getId(context, "permission");
 
         if (authority.getExclusions().removePermission(permission)) {
             context.getSource().sendSuccess(() -> Component.literal("Removed '" + permission + "' exclusion from " + authority.getKey()), true);
