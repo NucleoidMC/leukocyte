@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 public interface ShapeBuilder {
     @Nullable
     static ShapeBuilder start(ServerPlayer player) {
-        var builder = (ShapeBuilder) player;
+        var builder = ((ShapeBuilderInjected) player).leukocyte$getAsBuilder();
         if (!builder.isBuilding()) {
             builder.start();
             return builder;
@@ -17,7 +17,7 @@ public interface ShapeBuilder {
 
     @Nullable
     static ShapeBuilder from(ServerPlayer player) {
-        var builder = (ShapeBuilder) player;
+        var builder = ((ShapeBuilderInjected) player).leukocyte$getAsBuilder();
         if (builder.isBuilding()) {
             return builder;
         }
