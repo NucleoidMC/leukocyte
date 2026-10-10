@@ -32,7 +32,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build modrinth
         env:
-          MODRINTH: ${{ secrets.MODRINTH }}
+          MODRINTH: ${{ secrets.MODRINTH_KEY }}
           CHANGELOG: ${{ github.event.release.body }}
 
       - name: Upload GitHub release
